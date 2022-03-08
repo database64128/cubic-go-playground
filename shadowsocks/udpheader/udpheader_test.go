@@ -2,6 +2,7 @@ package udpheader
 
 import (
 	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
 	"io"
@@ -14,6 +15,7 @@ import (
 var (
 	key       []byte
 	plaintext []byte
+	c         cipher.Block
 )
 
 func init() {
@@ -25,6 +27,11 @@ func init() {
 
 	plaintext = make([]byte, 16)
 	_, err = rand.Read(plaintext)
+	if err != nil {
+		panic(err)
+	}
+
+	c, err = aes.NewCipher(key)
 	if err != nil {
 		panic(err)
 	}
@@ -74,35 +81,19 @@ func BenchmarkAesEcbHeaderEncryption(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		cipher, err := aes.NewCipher(key)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		cipher.Encrypt(ciphertext, plaintext)
+		c.Encrypt(ciphertext, plaintext)
 	}
 }
 
 func BenchmarkAesEcbHeaderDecryption(b *testing.B) {
-	// Generate ciphertext
-	cipher, err := aes.NewCipher(key)
-	if err != nil {
-		b.Fatal(err)
-	}
-
 	ciphertext := make([]byte, 16)
-	cipher.Encrypt(ciphertext, plaintext)
+	c.Encrypt(ciphertext, plaintext)
 
 	decrypted := make([]byte, 16)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		cipher, err := aes.NewCipher(key)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		cipher.Decrypt(decrypted, ciphertext)
+		c.Decrypt(decrypted, ciphertext)
 	}
 }
