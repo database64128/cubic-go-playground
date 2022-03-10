@@ -38,12 +38,12 @@ func init() {
 }
 
 func BenchmarkGenSaltHkdfSha1(b *testing.B) {
+	salt := make([]byte, 32)
 	subkey := make([]byte, 32)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		salt := make([]byte, 32)
 		_, err := rand.Read(salt)
 		if err != nil {
 			b.Fatal(err)
@@ -59,13 +59,13 @@ func BenchmarkGenSaltHkdfSha1(b *testing.B) {
 }
 
 func BenchmarkGenSaltBlake3(b *testing.B) {
+	keyMaterial := make([]byte, 64)
+	copy(keyMaterial, key)
 	subkey := make([]byte, 32)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		keyMaterial := make([]byte, 64)
-		copy(keyMaterial, key)
 		_, err := rand.Read(keyMaterial[32:])
 		if err != nil {
 			b.Fatal(err)
