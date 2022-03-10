@@ -7,4 +7,7 @@ require (
 	lukechampine.com/blake3 v1.1.7
 )
 
-require github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+require (
+	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
+)
