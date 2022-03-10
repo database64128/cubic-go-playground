@@ -153,6 +153,30 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInit(b *testing.B) {
 	}
 }
 
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitEncryptPadding(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	wg := makeWgHsInit(b)
+	buf := make([]byte, maxPacketLength)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+
+		// Generate nonce
+		_, err := rand.Read(buf[:nonceSize])
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Copy whole plaintext
+		copy(buf[nonceSize:], wg)
+
+		// Seal AEAD
+		xc20p1305.Seal(buf[nonceSize:nonceSize], buf[:nonceSize], buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength+paddingLen], nil)
+	}
+}
+
 func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgData(b *testing.B) {
 	nonceSize := xc20p1305.NonceSize()
 	overhead := xc20p1305.Overhead()
