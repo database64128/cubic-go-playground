@@ -46,7 +46,7 @@ func initBlake3KeyedHash(b *testing.B, size int) io.Reader {
 		b.Fatal(err)
 	}
 
-	h := blake3.New(32, key)
+	h := blake3.New(size, key)
 	return h.XOF()
 }
 
