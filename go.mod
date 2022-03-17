@@ -1,6 +1,6 @@
 module github.com/database64128/cubic-go-playground
 
-go 1.17
+go 1.18
 
 require (
 	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70
