@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"golang.org/x/crypto/chacha20poly1305"
+	"lukechampine.com/blake3"
 )
 
 const (
@@ -20,6 +21,7 @@ var (
 	key       []byte
 	aesecb    cipher.Block
 	xc20p1305 cipher.AEAD
+	blake3xof *blake3.OutputReader
 )
 
 func init() {
@@ -38,37 +40,46 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	h := blake3.New(24, key)
+	blake3xof = h.XOF()
 }
 
-func makeWgHsInit(b *testing.B) []byte {
-	wgHsInit := make([]byte, wireguardHandshakeInitiationMessageLength)
-	wgHsInit[0] = 1
-	_, err := rand.Read(wgHsInit[1:])
+func writeWgHsInit(b *testing.B, buf []byte) {
+	buf[0] = 1
+	_, err := rand.Read(buf[1:wireguardHandshakeInitiationMessageLength])
 	if err != nil {
 		b.Fatal(err)
 	}
-	return wgHsInit
 }
 
-func makeWgData(b *testing.B) []byte {
-	wgHsInit := make([]byte, maxPacketLength-40)
-	wgHsInit[0] = 4
-	_, err := rand.Read(wgHsInit[1:])
+func writeWgData(b *testing.B, buf []byte) {
+	buf[0] = 4
+	_, err := rand.Read(buf[1:])
 	if err != nil {
 		b.Fatal(err)
 	}
-	return wgHsInit
 }
 
 func BenchmarkZeroOverheadAesEncryptPartialWgHsInit(b *testing.B) {
-	wg := makeWgHsInit(b)
 	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		aesecb.Encrypt(buf, wg[:16])
-		copy(buf[16:], wg[16:])
+		aesecb.Encrypt(buf[:16], buf[:16])
+	}
+}
+
+func BenchmarkZeroOverheadAesEncryptPartialWgHsInitRandomPadding(b *testing.B) {
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		aesecb.Encrypt(buf[:16], buf[:16])
 
 		paddingLen := mrand.Intn(maxPaddingLength + 1)
 		_, err := rand.Read(buf[wireguardHandshakeInitiationMessageLength : wireguardHandshakeInitiationMessageLength+paddingLen])
@@ -78,21 +89,94 @@ func BenchmarkZeroOverheadAesEncryptPartialWgHsInit(b *testing.B) {
 	}
 }
 
+func BenchmarkZeroOverheadAesEncryptPartialWgHsInitBlake3KeyedHashPadding(b *testing.B) {
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		aesecb.Encrypt(buf[:16], buf[:16])
+
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		_, err := blake3xof.Read(buf[wireguardHandshakeInitiationMessageLength : wireguardHandshakeInitiationMessageLength+paddingLen])
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 func BenchmarkZeroOverheadAesEncryptPartialWgData(b *testing.B) {
-	wg := makeWgData(b)
+	buf := make([]byte, maxPacketLength)
+	writeWgData(b, buf)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		aesecb.Encrypt(wg[:16], wg[:16])
+		aesecb.Encrypt(buf[:16], buf[:16])
 	}
 }
 
-func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInit(b *testing.B) {
+func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInitRandomNonce(b *testing.B) {
 	nonceSize := xc20p1305.NonceSize()
 	overhead := xc20p1305.Overhead()
-	wg := makeWgHsInit(b)
 	buf := make([]byte, maxPacketLength)
+	wg := make([]byte, wireguardHandshakeInitiationMessageLength)
+	writeWgHsInit(b, wg)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := rand.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Copy plaintext after 16 bytes
+		copy(buf[nonceSize+16+overhead:], wg[16:])
+
+		// Seal first 16 bytes
+		xc20p1305.Seal(nonce, nonce, wg[:16], buf[nonceSize+16+overhead:validLen])
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInitBlake3KeyedHashNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	wg := make([]byte, wireguardHandshakeInitiationMessageLength)
+	writeWgHsInit(b, wg)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := blake3xof.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Copy plaintext after 16 bytes
+		copy(buf[nonceSize+16+overhead:], wg[16:])
+
+		// Seal first 16 bytes
+		xc20p1305.Seal(nonce, nonce, wg[:16], buf[nonceSize+16+overhead:validLen])
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInitRandomPadding(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	wg := make([]byte, wireguardHandshakeInitiationMessageLength)
+	writeWgHsInit(b, wg)
 
 	b.ResetTimer()
 
@@ -100,16 +184,229 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInit(b *testing.B) {
 		paddingLen := mrand.Intn(maxPaddingLength + 1)
 		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
 		totalLen := validLen + paddingLen
+		nonce := buf[:nonceSize]
 		padding := buf[validLen:totalLen]
 
-		// Add padding
-		_, err := rand.Read(padding)
+		// Generate nonce
+		_, err := rand.Read(nonce)
 		if err != nil {
 			b.Fatal(err)
 		}
 
+		// Copy plaintext after 16 bytes
+		copy(buf[nonceSize+16+overhead:], wg[16:])
+
+		// Add padding
+		_, err = rand.Read(padding)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal first 16 bytes
+		xc20p1305.Seal(nonce, nonce, wg[:16], buf[nonceSize+16+overhead:totalLen])
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInitBlake3KeyedHashPadding(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	wg := make([]byte, wireguardHandshakeInitiationMessageLength)
+	writeWgHsInit(b, wg)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
+		totalLen := validLen + paddingLen
+		nonce := buf[:nonceSize]
+		padding := buf[validLen:totalLen]
+
 		// Generate nonce
-		_, err = rand.Read(buf[:nonceSize])
+		_, err := blake3xof.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Copy plaintext after 16 bytes
+		copy(buf[nonceSize+16+overhead:], wg[16:])
+
+		// Add padding
+		_, err = blake3xof.Read(padding)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal first 16 bytes
+		xc20p1305.Seal(nonce, nonce, wg[:16], buf[nonceSize+16+overhead:totalLen])
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitRandomNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf[nonceSize:])
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := rand.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength], nil)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitBlake3KeyedHashNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf[nonceSize:])
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := blake3xof.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength], nil)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitRandomPadding(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf[nonceSize:])
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
+		totalLen := validLen + paddingLen
+		nonce := buf[:nonceSize]
+		padding := buf[validLen:totalLen]
+
+		// Generate nonce
+		_, err := rand.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Add padding
+		_, err = rand.Read(padding)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength], padding)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitBlake3KeyedHashPadding(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf[nonceSize:])
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
+		totalLen := validLen + paddingLen
+		nonce := buf[:nonceSize]
+		padding := buf[validLen:totalLen]
+
+		// Generate nonce
+		_, err := blake3xof.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Add padding
+		_, err = blake3xof.Read(padding)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength], padding)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitEncryptPaddingRandomNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf[nonceSize:])
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := rand.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength+paddingLen], nil)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitEncryptPaddingBlake3KeyedHashNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	buf := make([]byte, maxPacketLength)
+	writeWgHsInit(b, buf[nonceSize:])
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := blake3xof.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength+paddingLen], nil)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgDataRandomNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	wg := make([]byte, maxPacketLength-nonceSize-overhead)
+	writeWgData(b, wg)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := rand.Read(nonce)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -118,76 +415,24 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInit(b *testing.B) {
 		copy(buf[nonceSize+16+overhead:], wg[16:])
 
 		// Seal AEAD
-		xc20p1305.Seal(buf[nonceSize:nonceSize], buf[:nonceSize], wg[:16], buf[nonceSize+16+overhead:totalLen])
+		xc20p1305.Seal(nonce, nonce, wg[:16], buf[nonceSize+16+overhead:nonceSize+len(wg)+overhead])
 	}
 }
 
-func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInit(b *testing.B) {
+func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgDataBlake3KeyedHashNonce(b *testing.B) {
 	nonceSize := xc20p1305.NonceSize()
 	overhead := xc20p1305.Overhead()
-	wg := makeWgHsInit(b)
 	buf := make([]byte, maxPacketLength)
+	wg := make([]byte, maxPacketLength-nonceSize-overhead)
+	writeWgData(b, wg)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
-		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
-		totalLen := validLen + paddingLen
-		padding := buf[validLen:totalLen]
-
-		// Add padding
-		_, err := rand.Read(padding)
-		if err != nil {
-			b.Fatal(err)
-		}
+		nonce := buf[:nonceSize]
 
 		// Generate nonce
-		_, err = rand.Read(buf[:nonceSize])
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		// Seal AEAD
-		xc20p1305.Seal(buf[nonceSize:nonceSize], buf[:nonceSize], wg, padding)
-	}
-}
-
-func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitEncryptPadding(b *testing.B) {
-	nonceSize := xc20p1305.NonceSize()
-	wg := makeWgHsInit(b)
-	buf := make([]byte, maxPacketLength)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
-
-		// Generate nonce
-		_, err := rand.Read(buf[:nonceSize])
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		// Copy whole plaintext
-		copy(buf[nonceSize:], wg)
-
-		// Seal AEAD
-		xc20p1305.Seal(buf[nonceSize:nonceSize], buf[:nonceSize], buf[nonceSize:nonceSize+wireguardHandshakeInitiationMessageLength+paddingLen], nil)
-	}
-}
-
-func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgData(b *testing.B) {
-	nonceSize := xc20p1305.NonceSize()
-	overhead := xc20p1305.Overhead()
-	wg := makeWgData(b)
-	buf := make([]byte, maxPacketLength)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		// Generate nonce
-		_, err := rand.Read(buf[:nonceSize])
+		_, err := blake3xof.Read(nonce)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -196,25 +441,52 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgData(b *testing.B) {
 		copy(buf[nonceSize+16+overhead:], wg[16:])
 
 		// Seal AEAD
-		xc20p1305.Seal(buf[nonceSize:nonceSize], buf[:nonceSize], wg[:16], buf[nonceSize+16+overhead:nonceSize+len(wg)+overhead])
+		xc20p1305.Seal(nonce, nonce, wg[:16], buf[nonceSize+16+overhead:nonceSize+len(wg)+overhead])
 	}
 }
 
-func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgData(b *testing.B) {
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgDataRandomNonce(b *testing.B) {
 	nonceSize := xc20p1305.NonceSize()
-	wg := makeWgData(b)
+	overhead := xc20p1305.Overhead()
 	buf := make([]byte, maxPacketLength)
+	plaintext := buf[nonceSize : maxPacketLength-nonceSize-overhead]
+	writeWgData(b, plaintext)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
+		nonce := buf[:nonceSize]
+
 		// Generate nonce
-		_, err := rand.Read(buf[:nonceSize])
+		_, err := rand.Read(nonce)
 		if err != nil {
 			b.Fatal(err)
 		}
 
 		// Seal AEAD
-		xc20p1305.Seal(buf[nonceSize:nonceSize], buf[:nonceSize], wg, nil)
+		xc20p1305.Seal(nonce, nonce, plaintext, nil)
+	}
+}
+
+func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgDataBlake3KeyedHashNonce(b *testing.B) {
+	nonceSize := xc20p1305.NonceSize()
+	overhead := xc20p1305.Overhead()
+	buf := make([]byte, maxPacketLength)
+	plaintext := buf[nonceSize : maxPacketLength-nonceSize-overhead]
+	writeWgData(b, plaintext)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		nonce := buf[:nonceSize]
+
+		// Generate nonce
+		_, err := blake3xof.Read(nonce)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Seal AEAD
+		xc20p1305.Seal(nonce, nonce, plaintext, nil)
 	}
 }
