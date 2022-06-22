@@ -3,7 +3,7 @@ module github.com/database64128/cubic-go-playground
 go 1.18
 
 require (
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	lukechampine.com/blake3 v1.1.7
 )
 
