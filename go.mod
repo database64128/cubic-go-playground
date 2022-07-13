@@ -3,7 +3,7 @@ module github.com/database64128/cubic-go-playground
 go 1.18
 
 require (
-	github.com/database64128/tfo-go v1.0.4
+	github.com/database64128/tfo-go v1.0.5
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	lukechampine.com/blake3 v1.1.7
@@ -13,5 +13,5 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/sys v0.0.0-20220317061510-51cd9980dadf // indirect
+	golang.org/x/sys v0.0.0-20220712014510-0a85c31ab51e // indirect
 )
