@@ -29,7 +29,7 @@ var verbose = flag.Bool("verbose", false, "Enable verbose logging")
 func main() {
 	flag.Parse()
 
-	logger, err := NewProductionConsole(false, "")
+	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
 	}
