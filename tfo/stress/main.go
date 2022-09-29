@@ -3,11 +3,12 @@ package main
 import (
 	"io"
 	"log"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"time"
 
-	"github.com/database64128/tfo-go"
+	"github.com/database64128/tfo-go/v2"
 )
 
 func main() {
@@ -22,17 +23,12 @@ func main() {
 }
 
 func stressTFO() {
-	netConn, err := tfo.Dial("tcp", "[::1]:1080")
+	netConn, err := tfo.Dial("tcp", "[::1]:1080", []byte{5, 2, 1, 2})
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn := netConn.(tfo.Conn)
+	conn := netConn.(*net.TCPConn)
 	defer conn.Close()
-
-	_, err = conn.Write([]byte{5, 2, 1, 2})
-	if err != nil {
-		log.Println(err)
-	}
 
 	err = conn.CloseWrite()
 	if err != nil {
