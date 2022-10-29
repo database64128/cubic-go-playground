@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"math/rand"
 	"net"
 	"net/netip"
 	"os"
@@ -63,34 +62,27 @@ func ResolveAddr(host string, preferredAF AddressFamily) (netip.Addr, error) {
 		return netip.Addr{}, err
 	}
 
-	if len(ips) == 1 {
-		return ips[0], nil
-	}
+	fmt.Println(ips)
 
-	switch preferredAF {
-	case AddressFamilyIPv4, AddressFamilyIPv6:
-	case AddressFamilyUnspecified:
-		if ips[0].Unmap().Is4() {
-			preferredAF = AddressFamilyIPv4
-		} else {
-			preferredAF = AddressFamilyIPv6
-		}
-	default:
-		return netip.Addr{}, fmt.Errorf("invalid address family: %d", preferredAF)
-	}
-
-	var primaries, fallbacks []netip.Addr
-
-	for i := range ips {
-		if ip := ips[i].Unmap(); preferredAF == AddressFamilyIPv4 && ip.Is4() || preferredAF == AddressFamilyIPv6 && !ip.Is4() {
-			primaries = append(primaries, ip)
-		} else {
-			fallbacks = append(fallbacks, ip)
+	if len(ips) > 1 {
+		switch preferredAF {
+		case AddressFamilyUnspecified:
+		case AddressFamilyIPv4:
+			for _, ip := range ips {
+				if ip.Is4() || ip.Is4In6() {
+					return ip, nil
+				}
+			}
+		case AddressFamilyIPv6:
+			for _, ip := range ips {
+				if !ip.Is4() && !ip.Is4In6() {
+					return ip, nil
+				}
+			}
+		default:
+			return netip.Addr{}, fmt.Errorf("invalid address family: %d", preferredAF)
 		}
 	}
 
-	if len(primaries) == 0 {
-		return fallbacks[rand.Intn(len(fallbacks))], nil
-	}
-	return primaries[rand.Intn(len(primaries))], nil
+	return ips[0], nil
 }
