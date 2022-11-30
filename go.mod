@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/database64128/tfo-go/v2 v2.0.2
-	go.uber.org/zap v1.23.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.3.0
 	lukechampine.com/blake3 v1.1.7
 )
