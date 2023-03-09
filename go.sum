@@ -1,6 +1,6 @@
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
-github.com/database64128/tfo-go/v2 v2.0.3 h1:nlnItc4RgZvlPhSCuq8OZdhayo93vzV2KTR6t7v5axQ=
-github.com/database64128/tfo-go/v2 v2.0.3/go.mod h1:Jws8V8Go1OD8nxmAFORjBxa0Vg2C6MeWv17eDEWDEGM=
+github.com/database64128/tfo-go/v2 v2.0.4 h1:926W0oFXeWkoylhfKXiI4X0gkxJGCFOo5Q6wKVjHiCY=
+github.com/database64128/tfo-go/v2 v2.0.4/go.mod h1:IxEVHON2XCQrAJcJHlff7SFtusf4LFCy/TCqs8IyFbs=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/klauspost/cpuid/v2 v2.0.9 h1:lgaqFMSdTdQYdZ04uHyN2d/eKdOMyi2YLSvlQIBFYa4=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
