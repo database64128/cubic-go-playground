@@ -6,7 +6,7 @@ require (
 	github.com/database64128/tfo-go/v2 v2.0.6
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
-	lukechampine.com/blake3 v1.1.7
+	lukechampine.com/blake3 v1.2.1
 )
 
 require (
