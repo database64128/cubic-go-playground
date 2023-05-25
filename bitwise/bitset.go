@@ -1,62 +1,102 @@
 package bitwise
 
-const (
-	bitSetBlockBitLog = 6                      // 1<<6 == 64 bits
-	bitSetBlockBits   = 1 << bitSetBlockBitLog // must be power of 2
-	bitSetbitMask     = bitSetBlockBits - 1
-	bitSetSize        = 1024
-	bitSetBlocks      = bitSetSize / 64
+import (
+	"fmt"
+	"math/bits"
 )
 
-// BitSet is a bitset with a capacity of 1024 bits.
+const blockBits = bits.UintSize
+
+// BitSet is a set of bits.
 type BitSet struct {
-	blocks [bitSetBlocks]uint64
+	blocks   []uint
+	capacity uint
 }
 
-// IsSet returns whether the bit at position pos is 1.
-func (s *BitSet) IsSet(pos int) bool {
-	blockIndex := pos >> bitSetBlockBitLog
-	bitIndex := pos & bitSetbitMask
-	return s.blocks[blockIndex]>>uint64(bitIndex)&1 == 1
-}
-
-// Set sets the bit at position pos to 1.
-func (s *BitSet) Set(pos int) {
-	blockIndex := pos >> bitSetBlockBitLog
-	bitIndex := pos & bitSetbitMask
-	s.blocks[blockIndex] |= 1 << bitIndex
-}
-
-// Reset sets the bit at position pos to 0.
-func (s *BitSet) Reset(pos int) {
-	blockIndex := pos >> bitSetBlockBitLog
-	bitIndex := pos & bitSetbitMask
-	s.blocks[blockIndex] &= ^(1 << bitIndex)
-}
-
-// Flip flips the bit at position pos.
-func (s *BitSet) Flip(pos int) {
-	blockIndex := pos >> bitSetBlockBitLog
-	bitIndex := pos & bitSetbitMask
-	s.blocks[blockIndex] ^= 1 << bitIndex
-}
-
-// SetAll sets all bits in the bitset to 1.
-func (s *BitSet) SetAll() {
-	for i := range s.blocks {
-		s.blocks[i] = 1<<64 - 1
+// NewBitSet returns a new BitSet with the given capacity.
+func NewBitSet(capacity uint) BitSet {
+	return BitSet{
+		blocks:   make([]uint, (capacity+blockBits-1)/blockBits),
+		capacity: capacity,
 	}
 }
 
-// ResetAll sets all bits in the bitset to 0.
-func (s *BitSet) ResetAll() {
-	var newBlocks [bitSetBlocks]uint64
-	s.blocks = newBlocks
+// Capacity returns the capacity of the BitSet.
+func (s BitSet) Capacity() uint {
+	return s.capacity
 }
 
-// FlipAll flips all bits in the bitset.
-func (s *BitSet) FlipAll() {
+// Count returns the number of bits set to 1.
+func (s BitSet) Count() (count uint) {
 	for i := range s.blocks {
+		count += uint(bits.OnesCount(s.blocks[i]))
+	}
+	return
+}
+
+func (s BitSet) checkIndex(index uint) {
+	if index >= s.capacity {
+		panic(fmt.Sprintf("bitset: index out of range [%d] with capacity %d", index, s.capacity))
+	}
+}
+
+func (s BitSet) blockIndex(index uint) uint {
+	return index / blockBits
+}
+
+func (s BitSet) bitIndex(index uint) uint {
+	return index % blockBits
+}
+
+// IsSet returns whether the bit at the given index is set to 1.
+func (s BitSet) IsSet(index uint) bool {
+	s.checkIndex(index)
+	return s.blocks[s.blockIndex(index)]&(1<<s.bitIndex(index)) != 0
+}
+
+// Set sets the bit at the given index to 1.
+func (s *BitSet) Set(index uint) {
+	s.checkIndex(index)
+	s.blocks[s.blockIndex(index)] |= 1 << s.bitIndex(index)
+}
+
+// Unset sets the bit at the given index to 0.
+func (s *BitSet) Unset(index uint) {
+	s.checkIndex(index)
+	s.blocks[s.blockIndex(index)] &^= 1 << s.bitIndex(index)
+}
+
+// Flip flips the bit at the given index.
+func (s *BitSet) Flip(index uint) {
+	s.checkIndex(index)
+	s.blocks[s.blockIndex(index)] ^= 1 << s.bitIndex(index)
+}
+
+// SetAll sets all bits to 1.
+func (s *BitSet) SetAll() {
+	fullBlocks := s.blockIndex(s.capacity)
+	for i := range s.blocks[:fullBlocks] {
+		s.blocks[i] = ^uint(0)
+	}
+	if fullBlocks < uint(len(s.blocks)) {
+		s.blocks[fullBlocks] = ^(^uint(0) << s.bitIndex(s.capacity))
+	}
+}
+
+// UnsetAll sets all bits to 0.
+func (s *BitSet) UnsetAll() {
+	for i := range s.blocks {
+		s.blocks[i] = 0
+	}
+}
+
+// FlipAll flips all bits.
+func (s *BitSet) FlipAll() {
+	fullBlocks := s.blockIndex(s.capacity)
+	for i := range s.blocks[:fullBlocks] {
 		s.blocks[i] = ^s.blocks[i]
+	}
+	if fullBlocks < uint(len(s.blocks)) {
+		s.blocks[fullBlocks] ^= ^(^uint(0) << s.bitIndex(s.capacity))
 	}
 }
