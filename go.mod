@@ -1,9 +1,9 @@
 module github.com/database64128/cubic-go-playground
 
-go 1.20
+go 1.21.0
 
 require (
-	github.com/database64128/tfo-go/v2 v2.0.6
+	github.com/database64128/tfo-go/v2 v2.1.0
 	go.uber.org/zap v1.25.0
 	golang.org/x/crypto v0.12.0
 	lukechampine.com/blake3 v1.2.1
