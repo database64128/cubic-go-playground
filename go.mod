@@ -1,6 +1,6 @@
 module github.com/database64128/cubic-go-playground
 
-go 1.21.6
+go 1.21.7
 
 require (
 	github.com/database64128/tfo-go/v2 v2.1.0
