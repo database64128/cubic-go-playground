@@ -15,16 +15,20 @@ func AddrPortMappedEqual(l, r netip.AddrPort) bool {
 	return l.Port() == r.Port() && l.Addr().Unmap() == r.Addr().Unmap()
 }
 
+type addrHeader struct {
+	ip [16]byte
+	z  unsafe.Pointer
+}
+
 type addrPortHeader struct {
-	ip   [16]byte
-	z    unsafe.Pointer
+	addr addrHeader
 	port uint16
 }
 
 func AddrPortMappedEqualUnsafe(l, r netip.AddrPort) bool {
 	lp := (*addrPortHeader)(unsafe.Pointer(&l))
 	rp := (*addrPortHeader)(unsafe.Pointer(&r))
-	return lp.ip == rp.ip && lp.port == rp.port
+	return lp.addr.ip == rp.addr.ip && lp.port == rp.port
 }
 
 // AddrPortv4Mappedv6 converts an IPv4 address to an IPv4-mapped IPv6 address.
@@ -39,10 +43,17 @@ func AddrPortv4Mappedv6(addrPort netip.AddrPort) netip.AddrPort {
 	return addrPort
 }
 
+var z6noz unsafe.Pointer
+
+func init() {
+	addr6 := netip.IPv6Unspecified()
+	z6noz = (*addrHeader)(unsafe.Pointer(&addr6)).z
+}
+
 func AddrPortv4Mappedv6Unsafe(addrPort netip.AddrPort) netip.AddrPort {
 	if addrPort.Addr().Is4() {
 		app := (*addrPortHeader)(unsafe.Pointer(&addrPort))
-		app.z = unsafe.Add(app.z, 3*unsafe.Sizeof(uintptr(0)))
+		app.addr.z = z6noz
 	}
 	return addrPort
 }

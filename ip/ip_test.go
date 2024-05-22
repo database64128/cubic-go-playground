@@ -8,7 +8,7 @@ import (
 
 var (
 	addrPort4    = netip.AddrPortFrom(netip.AddrFrom4([4]byte{127, 0, 0, 1}), 1080)
-	addrPort4in6 = netip.AddrPortFrom(netip.AddrFrom16([16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 127, 0, 0, 1}), 1080)
+	addrPort4in6 = netip.AddrPortFrom(netip.AddrFrom16([16]byte{10: 0xff, 0xff, 127, 0, 0, 1}), 1080)
 )
 
 func BenchmarkAddrPortMappedEqual(b *testing.B) {
@@ -69,9 +69,9 @@ func BenchmarkAddrPortv4Mappedv6Unsafe(b *testing.B) {
 
 func TestAddrPortv4Mappedv6Unsafe(t *testing.T) {
 	app := (*addrPortHeader)(unsafe.Pointer(&addrPort4))
-	t.Logf("addrPort4.z: %p", app.z)
+	t.Logf("addrPort4.z: %p", app.addr.z)
 	app = (*addrPortHeader)(unsafe.Pointer(&addrPort4in6))
-	t.Logf("addrPort4in6.z: %p", app.z)
+	t.Logf("addrPort4in6.z: %p", app.addr.z)
 
 	if ap := AddrPortv4Mappedv6Unsafe(addrPort4); ap != addrPort4in6 {
 		t.Errorf("AddrPortv4Mappedv6Unsafe(%s) returned %s, expected %s.", addrPort4, ap, addrPort4in6)
