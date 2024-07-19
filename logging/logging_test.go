@@ -6,6 +6,7 @@ import (
 	"net/netip"
 	"testing"
 
+	"github.com/rs/zerolog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -244,4 +245,92 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 			})
 		})
 	}
+}
+
+func BenchmarkZerolog(b *testing.B) {
+	logger, close, err := NewZerologLogger(false)
+	if err != nil {
+		b.Fatalf("Failed to create logger: %v", err)
+	}
+	defer close()
+
+	benchmarkZerologLogger(b, logger)
+}
+
+func BenchmarkZerologPretty(b *testing.B) {
+	logger, close, err := NewZerologPrettyLogger(false, false)
+	if err != nil {
+		b.Fatalf("Failed to create logger: %v", err)
+	}
+	defer close()
+
+	benchmarkZerologLogger(b, logger)
+}
+
+func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
+	b.Run("Info", func(b *testing.B) {
+		for range b.N {
+			logger.Info().Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Info/FieldsString", func(b *testing.B) {
+		for range b.N {
+			logger.Info().
+				Str("ip", ip.String()).
+				Str("addrPort", addrPort.String()).
+				Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Info/FieldsStringer", func(b *testing.B) {
+		for range b.N {
+			logger.Info().
+				Stringer("ip", ip).
+				Stringer("addrPort", addrPort).
+				Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Info/FieldsStringerp", func(b *testing.B) {
+		for range b.N {
+			logger.Info().
+				Stringer("ip", &ip).
+				Stringer("addrPort", &addrPort).
+				Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Debug", func(b *testing.B) {
+		for range b.N {
+			logger.Debug().Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Debug/FieldsString", func(b *testing.B) {
+		for range b.N {
+			logger.Debug().
+				Str("ip", ip.String()).
+				Str("addrPort", addrPort.String()).
+				Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Debug/FieldsStringer", func(b *testing.B) {
+		for range b.N {
+			logger.Debug().
+				Stringer("ip", ip).
+				Stringer("addrPort", addrPort).
+				Msg("Hello, world!")
+		}
+	})
+
+	b.Run("Debug/FieldsStringerp", func(b *testing.B) {
+		for range b.N {
+			logger.Debug().
+				Stringer("ip", &ip).
+				Stringer("addrPort", &addrPort).
+				Msg("Hello, world!")
+		}
+	})
 }

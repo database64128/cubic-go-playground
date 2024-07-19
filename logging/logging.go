@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/lmittmann/tint"
+	"github.com/rs/zerolog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -73,7 +74,7 @@ func NewProductionConsoleEncoderConfig(noColor, noTime, noCaller bool) zapcore.E
 
 // NewTintSlogger creates a new [*slog.Logger] with a tint handler.
 func NewTintSlogger(level slog.Level, noColor, noTime bool) (*slog.Logger, func() error, error) {
-	f, err := os.Open(os.DevNull)
+	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -93,4 +94,35 @@ func NewTintSlogger(level slog.Level, noColor, noTime bool) (*slog.Logger, func(
 		ReplaceAttr: replaceAttr,
 		NoColor:     noColor,
 	})), f.Close, nil
+}
+
+// NewZerologLogger creates a new [zerolog.Logger].
+func NewZerologLogger(noTime bool) (zerolog.Logger, func() error, error) {
+	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		return zerolog.Logger{}, nil, err
+	}
+
+	logger := zerolog.New(f)
+	if noTime {
+		return logger, f.Close, nil
+	}
+	return logger.With().Timestamp().Logger(), f.Close, nil
+}
+
+// NewZerologPrettyLogger creates a new [zerolog.Logger] with a pretty console writer.
+func NewZerologPrettyLogger(noColor, noTime bool) (zerolog.Logger, func() error, error) {
+	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		return zerolog.Logger{}, nil, err
+	}
+
+	logger := zerolog.New(zerolog.ConsoleWriter{
+		Out:     f,
+		NoColor: noColor,
+	})
+	if noTime {
+		return logger, f.Close, nil
+	}
+	return logger.With().Timestamp().Logger(), f.Close, nil
 }
