@@ -17,25 +17,30 @@ var (
 )
 
 func BenchmarkZapConsole(b *testing.B) {
-	zc := NewProductionConsoleConfig(false, false, false)
-	logger, err := zc.Build()
-	if err != nil {
-		b.Fatalf("Failed to build logger: %v", err)
+	for _, c := range []struct {
+		name      string
+		noColor   bool
+		noTime    bool
+		addCaller bool
+	}{
+		{"Color", false, false, false},
+		{"NoColor", true, false, false},
+		{"NoTime", false, true, false},
+		{"AddCaller", false, false, true},
+	} {
+		b.Run(c.name, func(b *testing.B) {
+			logger, close, err := NewProductionConsoleZapLogger(c.noColor, c.noTime, c.addCaller, zap.InfoLevel)
+			if err != nil {
+				b.Fatalf("Failed to build logger: %v", err)
+			}
+			b.Cleanup(func() {
+				_ = logger.Sync()
+				_ = close()
+			})
+
+			benchmarkZapLogger(b, logger)
+		})
 	}
-	defer logger.Sync()
-
-	benchmarkZapLogger(b, logger)
-}
-
-func BenchmarkZapConsoleNoCaller(b *testing.B) {
-	zc := NewProductionConsoleConfig(false, false, true)
-	logger, err := zc.Build()
-	if err != nil {
-		b.Fatalf("Failed to build logger: %v", err)
-	}
-	defer logger.Sync()
-
-	benchmarkZapLogger(b, logger)
 }
 
 func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
@@ -248,7 +253,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 }
 
 func BenchmarkZerolog(b *testing.B) {
-	logger, close, err := NewZerologLogger(false)
+	logger, close, err := NewZerologLogger(zerolog.InfoLevel, false)
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
@@ -258,7 +263,7 @@ func BenchmarkZerolog(b *testing.B) {
 }
 
 func BenchmarkZerologPretty(b *testing.B) {
-	logger, close, err := NewZerologPrettyLogger(false, false)
+	logger, close, err := NewZerologPrettyLogger(zerolog.InfoLevel, false, false)
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
