@@ -1,3 +1,110 @@
+Running tool: /usr/bin/go test -benchmem -run=^$ -coverprofile=/tmp/vscode-goXHUl02/go-code-cover -bench . github.com/database64128/cubic-go-playground/logging
+
+goos: linux
+goarch: amd64
+pkg: github.com/database64128/cubic-go-playground/logging
+cpu: 13th Gen Intel(R) Core(TM) i9-13900K
+BenchmarkZapConsole/Color/Info-32         	 2469505	       477.5 ns/op	      64 B/op	       3 allocs/op
+BenchmarkZapConsole/Color/Info/FieldsString-32         	 1479357	       776.6 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/Color/Info/FieldsStringer-32       	 1330840	       862.1 ns/op	     282 B/op	       9 allocs/op
+BenchmarkZapConsole/Color/Info/FieldsStringerp-32      	 1322336	       803.5 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/Color/Debug-32                     	411337682	         2.833 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/Color/Debug/FieldsString-32        	 6487881	       261.8 ns/op	     160 B/op	       4 allocs/op
+BenchmarkZapConsole/Color/Debug/FieldsStringer-32      	16695075	        63.75 ns/op	     184 B/op	       3 allocs/op
+BenchmarkZapConsole/Color/Debug/FieldsStringerp-32     	40668480	        29.64 ns/op	     128 B/op	       1 allocs/op
+BenchmarkZapConsole/Color/info/CheckNoFields-32        	 2505130	       468.9 ns/op	      64 B/op	       3 allocs/op
+BenchmarkZapConsole/Color/info/CheckFieldsString-32    	 1556842	       732.2 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/Color/info/CheckFieldsStringer-32  	 1407297	       812.6 ns/op	     282 B/op	       9 allocs/op
+BenchmarkZapConsole/Color/info/CheckFieldsStringerp-32 	 1587757	       791.2 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/Color/debug/CheckNoFields-32       	482821082	         2.447 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/Color/debug/CheckFieldsString-32   	504212560	         2.345 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/Color/debug/CheckFieldsStringer-32 	518406264	         2.217 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/Color/debug/CheckFieldsStringerp-32         	473373901	         2.411 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoColor/Info-32                             	 2588113	       462.9 ns/op	      64 B/op	       3 allocs/op
+BenchmarkZapConsole/NoColor/Info/FieldsString-32                	 1581780	       775.9 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/NoColor/Info/FieldsStringer-32              	 1349806	       877.2 ns/op	     282 B/op	       9 allocs/op
+BenchmarkZapConsole/NoColor/Info/FieldsStringerp-32             	 1474426	       772.0 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/NoColor/Debug-32                            	404114301	         3.006 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoColor/Debug/FieldsString-32               	 4602657	       224.0 ns/op	     160 B/op	       4 allocs/op
+BenchmarkZapConsole/NoColor/Debug/FieldsStringer-32             	18951039	        62.99 ns/op	     184 B/op	       3 allocs/op
+BenchmarkZapConsole/NoColor/Debug/FieldsStringerp-32            	42950559	        29.87 ns/op	     128 B/op	       1 allocs/op
+BenchmarkZapConsole/NoColor/info/CheckNoFields-32               	 2536690	       470.7 ns/op	      64 B/op	       3 allocs/op
+BenchmarkZapConsole/NoColor/info/CheckFieldsString-32           	 1468395	       784.2 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/NoColor/info/CheckFieldsStringer-32         	 1305744	       890.8 ns/op	     282 B/op	       9 allocs/op
+BenchmarkZapConsole/NoColor/info/CheckFieldsStringerp-32        	 1512039	       791.4 ns/op	     225 B/op	       7 allocs/op
+BenchmarkZapConsole/NoColor/debug/CheckNoFields-32              	461076361	         2.422 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoColor/debug/CheckFieldsString-32          	510010042	         2.322 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoColor/debug/CheckFieldsStringer-32        	489704581	         2.227 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoColor/debug/CheckFieldsStringerp-32       	470769774	         2.438 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoTime/Info-32                              	 4535547	       264.4 ns/op	      16 B/op	       1 allocs/op
+BenchmarkZapConsole/NoTime/Info/FieldsString-32                 	 1946547	       601.9 ns/op	     177 B/op	       5 allocs/op
+BenchmarkZapConsole/NoTime/Info/FieldsStringer-32               	 1799356	       681.1 ns/op	     233 B/op	       7 allocs/op
+BenchmarkZapConsole/NoTime/Info/FieldsStringerp-32              	 2021860	       576.9 ns/op	     177 B/op	       5 allocs/op
+BenchmarkZapConsole/NoTime/Debug-32                             	429651531	         2.823 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoTime/Debug/FieldsString-32                	 6891484	       169.4 ns/op	     160 B/op	       4 allocs/op
+BenchmarkZapConsole/NoTime/Debug/FieldsStringer-32              	18118765	        61.30 ns/op	     184 B/op	       3 allocs/op
+BenchmarkZapConsole/NoTime/Debug/FieldsStringerp-32             	39231301	        30.68 ns/op	     128 B/op	       1 allocs/op
+BenchmarkZapConsole/NoTime/info/CheckNoFields-32                	 4196691	       267.9 ns/op	      16 B/op	       1 allocs/op
+BenchmarkZapConsole/NoTime/info/CheckFieldsString-32            	 2002192	       589.3 ns/op	     177 B/op	       5 allocs/op
+BenchmarkZapConsole/NoTime/info/CheckFieldsStringer-32          	 1771386	       664.0 ns/op	     233 B/op	       7 allocs/op
+BenchmarkZapConsole/NoTime/info/CheckFieldsStringerp-32         	 1722302	       590.2 ns/op	     177 B/op	       5 allocs/op
+BenchmarkZapConsole/NoTime/debug/CheckNoFields-32               	434633472	         2.414 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoTime/debug/CheckFieldsString-32           	480003619	         2.388 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoTime/debug/CheckFieldsStringer-32         	513091789	         2.217 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/NoTime/debug/CheckFieldsStringerp-32        	481408768	         2.480 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/AddCaller/Info-32                           	 1000000	      1147 ns/op	     339 B/op	       6 allocs/op
+BenchmarkZapConsole/AddCaller/Info/FieldsString-32              	  832954	      1524 ns/op	     500 B/op	      10 allocs/op
+BenchmarkZapConsole/AddCaller/Info/FieldsStringer-32            	  705321	      1592 ns/op	     557 B/op	      12 allocs/op
+BenchmarkZapConsole/AddCaller/Info/FieldsStringerp-32           	  734468	      1496 ns/op	     500 B/op	      10 allocs/op
+BenchmarkZapConsole/AddCaller/Debug-32                          	418145510	         2.796 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/AddCaller/Debug/FieldsString-32             	 5547805	       218.3 ns/op	     160 B/op	       4 allocs/op
+BenchmarkZapConsole/AddCaller/Debug/FieldsStringer-32           	19806682	        63.68 ns/op	     184 B/op	       3 allocs/op
+BenchmarkZapConsole/AddCaller/Debug/FieldsStringerp-32          	40816917	        30.72 ns/op	     128 B/op	       1 allocs/op
+BenchmarkZapConsole/AddCaller/info/CheckNoFields-32             	 1403556	       983.1 ns/op	     339 B/op	       6 allocs/op
+BenchmarkZapConsole/AddCaller/info/CheckFieldsString-32         	  895972	      1391 ns/op	     500 B/op	      10 allocs/op
+BenchmarkZapConsole/AddCaller/info/CheckFieldsStringer-32       	  739760	      1551 ns/op	     557 B/op	      12 allocs/op
+BenchmarkZapConsole/AddCaller/info/CheckFieldsStringerp-32      	  915294	      1420 ns/op	     500 B/op	      10 allocs/op
+BenchmarkZapConsole/AddCaller/debug/CheckNoFields-32            	466337761	         2.404 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/AddCaller/debug/CheckFieldsString-32        	447726204	         2.357 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/AddCaller/debug/CheckFieldsStringer-32      	540024078	         2.261 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZapConsole/AddCaller/debug/CheckFieldsStringerp-32     	492483706	         2.440 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/Info-32                                       	 3595466	       335.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/Debug-32                                      	462255231	         2.617 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/INFO/Attr-32                                  	 3528583	       335.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/INFO/AttrFieldsAny-32                         	 1567590	       768.7 ns/op	     168 B/op	       4 allocs/op
+BenchmarkSlogTint/INFO/AttrFieldsAnyp-32                        	 1653751	       686.9 ns/op	     112 B/op	       2 allocs/op
+BenchmarkSlogTint/INFO/AttrFieldsString-32                      	 1683039	       728.9 ns/op	      64 B/op	       5 allocs/op
+BenchmarkSlogTint/INFO/EnabledAttrFieldsAny-32                  	 1549838	       774.1 ns/op	     168 B/op	       4 allocs/op
+BenchmarkSlogTint/INFO/EnabledAttrFieldsAnyp-32                 	 1710895	       701.3 ns/op	     112 B/op	       2 allocs/op
+BenchmarkSlogTint/INFO/EnabledAttrFieldsString-32               	 1702414	       718.3 ns/op	      64 B/op	       5 allocs/op
+BenchmarkSlogTint/DEBUG/Attr-32                                 	413402402	         2.991 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/DEBUG/AttrFieldsAny-32                        	24699308	        42.82 ns/op	      56 B/op	       2 allocs/op
+BenchmarkSlogTint/DEBUG/AttrFieldsAnyp-32                       	146246736	         8.153 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/DEBUG/AttrFieldsString-32                     	 8830294	       124.0 ns/op	      32 B/op	       3 allocs/op
+BenchmarkSlogTint/DEBUG/EnabledAttrFieldsAny-32                 	619761558	         1.848 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/DEBUG/EnabledAttrFieldsAnyp-32                	639127244	         1.831 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTint/DEBUG/EnabledAttrFieldsString-32              	648903214	         1.785 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZerolog/Info-32                                        	 5780640	       199.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZerolog/Info/FieldsString-32                           	 3127828	       386.9 ns/op	      32 B/op	       3 allocs/op
+BenchmarkZerolog/Info/FieldsStringer-32                         	 2735622	       447.4 ns/op	      88 B/op	       5 allocs/op
+BenchmarkZerolog/Info/FieldsStringerp-32                        	 3133814	       389.5 ns/op	      32 B/op	       3 allocs/op
+BenchmarkZerolog/Debug-32                                       	1000000000	         1.199 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZerolog/Debug/FieldsString-32                          	 9645979	       128.9 ns/op	      32 B/op	       3 allocs/op
+BenchmarkZerolog/Debug/FieldsStringer-32                        	20503282	        57.34 ns/op	      56 B/op	       2 allocs/op
+BenchmarkZerolog/Debug/FieldsStringerp-32                       	516368424	         2.280 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZerologPretty/Info-32                                  	  564996	      3242 ns/op	    1671 B/op	      31 allocs/op
+BenchmarkZerologPretty/Info/FieldsString-32                     	  303148	      4391 ns/op	    2016 B/op	      54 allocs/op
+BenchmarkZerologPretty/Info/FieldsStringer-32                   	  295024	      4503 ns/op	    2073 B/op	      56 allocs/op
+BenchmarkZerologPretty/Info/FieldsStringerp-32                  	  317803	      4168 ns/op	    2016 B/op	      54 allocs/op
+BenchmarkZerologPretty/Debug-32                                 	1000000000	         1.178 ns/op	       0 B/op	       0 allocs/op
+BenchmarkZerologPretty/Debug/FieldsString-32                    	 9497130	       124.4 ns/op	      32 B/op	       3 allocs/op
+BenchmarkZerologPretty/Debug/FieldsStringer-32                  	29322164	        38.90 ns/op	      56 B/op	       2 allocs/op
+BenchmarkZerologPretty/Debug/FieldsStringerp-32                 	530165091	         2.254 ns/op	       0 B/op	       0 allocs/op
+PASS
+coverage: 75.0% of statements
+ok  	github.com/database64128/cubic-go-playground/logging	152.295s
+
+
 Running tool: /opt/homebrew/bin/go test -benchmem -run=^$ -coverprofile=/var/folders/xd/v25clzgj08d6_cbbp7lwszfr0000gn/T/vscode-goJCUpDh/go-code-cover -bench . github.com/database64128/cubic-go-playground/logging
 
 goos: darwin
