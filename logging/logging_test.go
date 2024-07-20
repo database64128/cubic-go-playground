@@ -6,6 +6,7 @@ import (
 	"net/netip"
 	"testing"
 
+	"github.com/database64128/cubic-go-playground/logging/tslog"
 	"github.com/rs/zerolog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -148,6 +149,133 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 						ce.Write(
 							zap.Stringer("ip", &ip),
 							zap.Stringer("addrPort", &addrPort),
+						)
+					}
+				}
+			})
+		})
+	}
+}
+
+func BenchmarkTslog(b *testing.B) {
+	for _, c := range []struct {
+		name    string
+		noColor bool
+		noTime  bool
+	}{
+		{"Color", false, false},
+		{"NoColor", true, false},
+		{"NoTime", false, true},
+	} {
+		b.Run(c.name, func(b *testing.B) {
+			logger, close, err := tslog.New(slog.LevelInfo, c.noColor, c.noTime)
+			if err != nil {
+				b.Fatalf("Failed to create logger: %v", err)
+			}
+			defer close()
+
+			benchmarkTslogLogger(b, logger)
+		})
+	}
+}
+
+func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
+	b.Run("Info", func(b *testing.B) {
+		for range b.N {
+			logger.Info("Hello, world!")
+		}
+	})
+
+	b.Run("Info/FieldsAny", func(b *testing.B) {
+		for range b.N {
+			logger.Info("Hello, world!",
+				slog.Any("ip", ip),
+				slog.Any("addrPort", addrPort),
+			)
+		}
+	})
+
+	b.Run("Info/FieldsAnyp", func(b *testing.B) {
+		for range b.N {
+			logger.Info("Hello, world!",
+				slog.Any("ip", &ip),
+				slog.Any("addrPort", &addrPort),
+			)
+		}
+	})
+
+	b.Run("Info/FieldsString", func(b *testing.B) {
+		for range b.N {
+			logger.Info("Hello, world!",
+				slog.String("ip", ip.String()),
+				slog.String("addrPort", addrPort.String()),
+			)
+		}
+	})
+
+	b.Run("Debug", func(b *testing.B) {
+		for range b.N {
+			logger.Debug("Hello, world!")
+		}
+	})
+
+	b.Run("Debug/FieldsAny", func(b *testing.B) {
+		for range b.N {
+			logger.Debug("Hello, world!",
+				slog.Any("ip", ip),
+				slog.Any("addrPort", addrPort),
+			)
+		}
+	})
+
+	b.Run("Debug/FieldsAnyp", func(b *testing.B) {
+		for range b.N {
+			logger.Debug("Hello, world!",
+				slog.Any("ip", &ip),
+				slog.Any("addrPort", &addrPort),
+			)
+		}
+	})
+
+	b.Run("Debug/FieldsString", func(b *testing.B) {
+		for range b.N {
+			logger.Debug("Hello, world!",
+				slog.String("ip", ip.String()),
+				slog.String("addrPort", addrPort.String()),
+			)
+		}
+	})
+
+	for _, lvl := range []slog.Level{slog.LevelInfo, slog.LevelDebug} {
+		b.Run(lvl.String(), func(b *testing.B) {
+			b.Run("EnabledFieldsAny", func(b *testing.B) {
+				for range b.N {
+					if logger.Enabled(lvl) {
+						logger.Log(lvl, "Hello, world!",
+							slog.Any("ip", ip),
+							slog.Any("addrPort", addrPort),
+						)
+					}
+				}
+			})
+
+			b.Run("EnabledFieldsAnyp", func(b *testing.B) {
+				for range b.N {
+					if logger.Enabled(lvl) {
+						logger.Log(lvl, "Hello, world!",
+							slog.Any("ip", &ip),
+							slog.Any("addrPort", &addrPort),
+						)
+					}
+				}
+			})
+
+			b.Run("EnabledFieldsString", func(b *testing.B) {
+				for range b.N {
+					if logger.Enabled(lvl) {
+						logger.Log(lvl, "Hello, world!",
+							slog.String("ip", ip.String()),
+							slog.String("addrPort", addrPort.String()),
 						)
 					}
 				}

@@ -105,6 +105,58 @@ coverage: 75.0% of statements
 ok  	github.com/database64128/cubic-go-playground/logging	152.295s
 
 
+Running tool: /usr/bin/go test -benchmem -run=^$ -bench ^BenchmarkTslog$ github.com/database64128/cubic-go-playground/logging
+
+goos: linux
+goarch: amd64
+pkg: github.com/database64128/cubic-go-playground/logging
+cpu: 13th Gen Intel(R) Core(TM) i9-13900K
+BenchmarkTslog/Color/Info-32    	 4658913	       262.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/Color/Info/FieldsAny-32         	 1792884	       716.4 ns/op	     168 B/op	       4 allocs/op
+BenchmarkTslog/Color/Info/FieldsAnyp-32        	 1921899	       613.3 ns/op	     112 B/op	       2 allocs/op
+BenchmarkTslog/Color/Info/FieldsString-32      	 1969767	       616.9 ns/op	      64 B/op	       5 allocs/op
+BenchmarkTslog/Color/Debug-32                  	1000000000	         0.7891 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/Color/Debug/FieldsAny-32        	32549110	        43.60 ns/op	      56 B/op	       2 allocs/op
+BenchmarkTslog/Color/Debug/FieldsAnyp-32       	170456635	         7.056 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/Color/Debug/FieldsString-32     	 9430016	       128.1 ns/op	      32 B/op	       3 allocs/op
+BenchmarkTslog/Color/INFO/EnabledFieldsAny-32  	 1749500	       707.5 ns/op	     168 B/op	       4 allocs/op
+BenchmarkTslog/Color/INFO/EnabledFieldsAnyp-32 	 2000264	       615.7 ns/op	     112 B/op	       2 allocs/op
+BenchmarkTslog/Color/INFO/EnabledFieldsString-32         	 1999462	       607.5 ns/op	      64 B/op	       5 allocs/op
+BenchmarkTslog/Color/DEBUG/EnabledFieldsAny-32           	1000000000	         0.1759 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/Color/DEBUG/EnabledFieldsAnyp-32          	1000000000	         0.2040 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/Color/DEBUG/EnabledFieldsString-32        	1000000000	         0.2661 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoColor/Info-32                           	 4777186	       253.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoColor/Info/FieldsAny-32                 	 1812098	       670.0 ns/op	     168 B/op	       4 allocs/op
+BenchmarkTslog/NoColor/Info/FieldsAnyp-32                	 2054749	       602.4 ns/op	     112 B/op	       2 allocs/op
+BenchmarkTslog/NoColor/Info/FieldsString-32              	 1974254	       616.1 ns/op	      64 B/op	       5 allocs/op
+BenchmarkTslog/NoColor/Debug-32                          	1000000000	         0.7808 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoColor/Debug/FieldsAny-32                	31831750	        52.83 ns/op	      56 B/op	       2 allocs/op
+BenchmarkTslog/NoColor/Debug/FieldsAnyp-32               	171804418	         6.935 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoColor/Debug/FieldsString-32             	 9708622	       124.9 ns/op	      32 B/op	       3 allocs/op
+BenchmarkTslog/NoColor/INFO/EnabledFieldsAny-32          	 1768134	       668.2 ns/op	     168 B/op	       4 allocs/op
+BenchmarkTslog/NoColor/INFO/EnabledFieldsAnyp-32         	 1929429	       595.1 ns/op	     112 B/op	       2 allocs/op
+BenchmarkTslog/NoColor/INFO/EnabledFieldsString-32       	 1951082	       610.8 ns/op	      64 B/op	       5 allocs/op
+BenchmarkTslog/NoColor/DEBUG/EnabledFieldsAny-32         	1000000000	         0.1823 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoColor/DEBUG/EnabledFieldsAnyp-32        	1000000000	         0.1922 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoColor/DEBUG/EnabledFieldsString-32      	1000000000	         0.3242 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoTime/Info-32                            	 8160199	       147.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoTime/Info/FieldsAny-32                  	 2257560	       547.3 ns/op	     168 B/op	       4 allocs/op
+BenchmarkTslog/NoTime/Info/FieldsAnyp-32                 	 2403614	       461.1 ns/op	     112 B/op	       2 allocs/op
+BenchmarkTslog/NoTime/Info/FieldsString-32               	 2597818	       467.3 ns/op	      64 B/op	       5 allocs/op
+BenchmarkTslog/NoTime/Debug-32                           	1000000000	         0.7803 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoTime/Debug/FieldsAny-32                 	25636522	        40.85 ns/op	      56 B/op	       2 allocs/op
+BenchmarkTslog/NoTime/Debug/FieldsAnyp-32                	172894663	         6.976 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoTime/Debug/FieldsString-32              	 9817819	       122.2 ns/op	      32 B/op	       3 allocs/op
+BenchmarkTslog/NoTime/INFO/EnabledFieldsAny-32           	 2076760	       529.9 ns/op	     168 B/op	       4 allocs/op
+BenchmarkTslog/NoTime/INFO/EnabledFieldsAnyp-32          	 2420341	       476.7 ns/op	     112 B/op	       2 allocs/op
+BenchmarkTslog/NoTime/INFO/EnabledFieldsString-32        	 2570404	       466.1 ns/op	      64 B/op	       5 allocs/op
+BenchmarkTslog/NoTime/DEBUG/EnabledFieldsAny-32          	1000000000	         0.1733 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoTime/DEBUG/EnabledFieldsAnyp-32         	1000000000	         0.2126 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTslog/NoTime/DEBUG/EnabledFieldsString-32       	1000000000	         0.3086 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/database64128/cubic-go-playground/logging	55.528s
+
+
 Running tool: /opt/homebrew/bin/go test -benchmem -run=^$ -coverprofile=/var/folders/xd/v25clzgj08d6_cbbp7lwszfr0000gn/T/vscode-goJCUpDh/go-code-cover -bench . github.com/database64128/cubic-go-playground/logging
 
 goos: darwin
