@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ip       = netip.IPv6LinkLocalAllNodes()
+	ip       = netip.AddrFrom16([16]byte{0x20, 0x01, 0x0d, 0xb8, 0xfa, 0xd6, 0x05, 0x72, 0xac, 0xbe, 0x71, 0x43, 0x14, 0xe5, 0x7a, 0x6e})
 	addrPort = netip.AddrPortFrom(ip, 1234)
 )
 
@@ -213,6 +213,15 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 		}
 	})
 
+	b.Run("Info/FieldsMarshalText", func(b *testing.B) {
+		for range b.N {
+			logger.Info("Hello, world!",
+				tslog.Addr("ip", ip),
+				tslog.AddrPort("addrPort", addrPort),
+			)
+		}
+	})
+
 	b.Run("Debug", func(b *testing.B) {
 		for range b.N {
 			logger.Debug("Hello, world!")
@@ -242,6 +251,15 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Debug("Hello, world!",
 				slog.String("ip", ip.String()),
 				slog.String("addrPort", addrPort.String()),
+			)
+		}
+	})
+
+	b.Run("Debug/FieldsMarshalText", func(b *testing.B) {
+		for range b.N {
+			logger.Debug("Hello, world!",
+				tslog.Addr("ip", ip),
+				tslog.AddrPort("addrPort", addrPort),
 			)
 		}
 	})
@@ -276,6 +294,17 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 						logger.Log(lvl, "Hello, world!",
 							slog.String("ip", ip.String()),
 							slog.String("addrPort", addrPort.String()),
+						)
+					}
+				}
+			})
+
+			b.Run("EnabledFieldsMarshalText", func(b *testing.B) {
+				for range b.N {
+					if logger.Enabled(lvl) {
+						logger.Log(lvl, "Hello, world!",
+							tslog.Addr("ip", ip),
+							tslog.AddrPort("addrPort", addrPort),
 						)
 					}
 				}
