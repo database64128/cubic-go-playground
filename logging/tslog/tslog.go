@@ -127,3 +127,19 @@ func AddrPort(key string, addrPort netip.AddrPort) slog.Attr {
 	s := unsafe.String(unsafe.SliceData(b), len(b))
 	return slog.String(key, s)
 }
+
+// Addrp returns a [slog.Attr] for a [*netip.Addr].
+//
+// Use [Addr] if the address is not already on the heap,
+// or the call is guarded by [Logger.Enabled].
+func Addrp(key string, addrp *netip.Addr) slog.Attr {
+	return slog.Any(key, addrp)
+}
+
+// AddrPortp returns a [slog.Attr] for a [*netip.AddrPort].
+//
+// Use [AddrPort] if the address is not already on the heap,
+// or the call is guarded by [Logger.Enabled].
+func AddrPortp(key string, addrPortp *netip.AddrPort) slog.Attr {
+	return slog.Any(key, addrPortp)
+}
