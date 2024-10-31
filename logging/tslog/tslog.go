@@ -34,6 +34,11 @@ func New(level slog.Level, noColor, noTime bool) (*Logger, func() error, error) 
 	return &Logger{level, noTime, handler}, f.Close, nil
 }
 
+// Handler returns the logger's handler.
+func (l *Logger) Handler() slog.Handler {
+	return l.handler
+}
+
 // WithAttrs returns a new [*Logger] with the given attributes included in every log message.
 func (l *Logger) WithAttrs(attrs ...slog.Attr) *Logger {
 	return &Logger{
