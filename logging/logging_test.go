@@ -162,13 +162,24 @@ func BenchmarkTslog(b *testing.B) {
 		name    string
 		noColor bool
 		noTime  bool
+		useText bool
+		useJSON bool
 	}{
-		{"Color", false, false},
-		{"NoColor", true, false},
-		{"NoTime", false, true},
+		{"Color", false, false, false, false},
+		{"NoColor", true, false, false, false},
+		{"NoTime", false, true, false, false},
+		{"UseText", false, false, true, false},
+		{"UseJSON", false, false, false, true},
 	} {
 		b.Run(c.name, func(b *testing.B) {
-			logger, close, err := tslog.New(slog.LevelInfo, c.noColor, c.noTime)
+			cfg := tslog.Config{
+				Level:          slog.LevelInfo,
+				NoColor:        c.noColor,
+				NoTime:         c.noTime,
+				UseTextHandler: c.useText,
+				UseJSONHandler: c.useJSON,
+			}
+			logger, close, err := cfg.NewLogger()
 			if err != nil {
 				b.Fatalf("Failed to create logger: %v", err)
 			}
