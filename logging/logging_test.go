@@ -218,8 +218,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 	b.Run("Info/FieldsString", func(b *testing.B) {
 		for range b.N {
 			logger.Info("Hello, world!",
-				slog.String("ip", ip.String()),
-				slog.String("addrPort", addrPort.String()),
+				tslog.Addr("ip", ip),
+				tslog.AddrPort("addrPort", addrPort),
 			)
 		}
 	})
@@ -227,8 +227,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 	b.Run("Info/FieldsMarshalText", func(b *testing.B) {
 		for range b.N {
 			logger.Info("Hello, world!",
-				tslog.Addr("ip", ip),
-				tslog.AddrPort("addrPort", addrPort),
+				tslog.AddrMarshalText("ip", ip),
+				tslog.AddrPortMarshalText("addrPort", addrPort),
 			)
 		}
 	})
@@ -260,8 +260,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 	b.Run("Debug/FieldsString", func(b *testing.B) {
 		for range b.N {
 			logger.Debug("Hello, world!",
-				slog.String("ip", ip.String()),
-				slog.String("addrPort", addrPort.String()),
+				tslog.Addr("ip", ip),
+				tslog.AddrPort("addrPort", addrPort),
 			)
 		}
 	})
@@ -269,8 +269,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 	b.Run("Debug/FieldsMarshalText", func(b *testing.B) {
 		for range b.N {
 			logger.Debug("Hello, world!",
-				tslog.Addr("ip", ip),
-				tslog.AddrPort("addrPort", addrPort),
+				tslog.AddrMarshalText("ip", ip),
+				tslog.AddrPortMarshalText("addrPort", addrPort),
 			)
 		}
 	})
@@ -303,8 +303,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 				for range b.N {
 					if logger.Enabled(lvl) {
 						logger.Log(lvl, "Hello, world!",
-							slog.String("ip", ip.String()),
-							slog.String("addrPort", addrPort.String()),
+							tslog.Addr("ip", ip),
+							tslog.AddrPort("addrPort", addrPort),
 						)
 					}
 				}
@@ -314,8 +314,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 				for range b.N {
 					if logger.Enabled(lvl) {
 						logger.Log(lvl, "Hello, world!",
-							tslog.Addr("ip", ip),
-							tslog.AddrPort("addrPort", addrPort),
+							tslog.AddrMarshalText("ip", ip),
+							tslog.AddrPortMarshalText("addrPort", addrPort),
 						)
 					}
 				}
