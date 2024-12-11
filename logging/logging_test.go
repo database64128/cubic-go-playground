@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/netip"
+	"os"
 	"testing"
 
 	"github.com/database64128/cubic-go-playground/logging/tslog"
@@ -17,7 +18,21 @@ var (
 	addrPort = netip.AddrPortFrom(ip, 1234)
 )
 
+func openDevNull(b *testing.B) *os.File {
+	b.Helper()
+	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		b.Skipf("Failed to open /dev/null: %v", err)
+	}
+	b.Cleanup(func() {
+		_ = f.Close()
+	})
+	return f
+}
+
 func BenchmarkZapConsole(b *testing.B) {
+	f := openDevNull(b)
+
 	for _, c := range []struct {
 		name      string
 		noColor   bool
@@ -30,13 +45,9 @@ func BenchmarkZapConsole(b *testing.B) {
 		{"AddCaller", false, false, true},
 	} {
 		b.Run(c.name, func(b *testing.B) {
-			logger, close, err := NewProductionConsoleZapLogger(c.noColor, c.noTime, c.addCaller, zap.InfoLevel)
-			if err != nil {
-				b.Fatalf("Failed to build logger: %v", err)
-			}
+			logger := NewProductionConsoleZapLogger(f, zap.InfoLevel, c.noColor, c.noTime, c.addCaller)
 			b.Cleanup(func() {
 				_ = logger.Sync()
-				_ = close()
 			})
 
 			benchmarkZapLogger(b, logger)
@@ -158,6 +169,8 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 }
 
 func BenchmarkTslog(b *testing.B) {
+	f := openDevNull(b)
+
 	for _, c := range []struct {
 		name    string
 		noColor bool
@@ -172,18 +185,14 @@ func BenchmarkTslog(b *testing.B) {
 		{"UseJSON", false, false, false, true},
 	} {
 		b.Run(c.name, func(b *testing.B) {
-			cfg := tslog.Config{
+			logCfg := tslog.Config{
 				Level:          slog.LevelInfo,
 				NoColor:        c.noColor,
 				NoTime:         c.noTime,
 				UseTextHandler: c.useText,
 				UseJSONHandler: c.useJSON,
 			}
-			logger, close, err := cfg.NewLogger()
-			if err != nil {
-				b.Fatalf("Failed to create logger: %v", err)
-			}
-			defer close()
+			logger := logCfg.NewLogger(f)
 
 			benchmarkTslogLogger(b, logger)
 		})
@@ -325,11 +334,8 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 }
 
 func BenchmarkSlogTint(b *testing.B) {
-	logger, close, err := NewTintSlogger(slog.LevelInfo, false, false)
-	if err != nil {
-		b.Fatalf("Failed to create logger: %v", err)
-	}
-	defer close()
+	f := openDevNull(b)
+	logger := NewTintSlogger(f, slog.LevelInfo, false, false)
 
 	benchmarkSlogLogger(b, logger)
 }
@@ -421,21 +427,15 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 }
 
 func BenchmarkZerolog(b *testing.B) {
-	logger, close, err := NewZerologLogger(zerolog.InfoLevel, false)
-	if err != nil {
-		b.Fatalf("Failed to create logger: %v", err)
-	}
-	defer close()
+	f := openDevNull(b)
+	logger := NewZerologLogger(f, zerolog.InfoLevel, false)
 
 	benchmarkZerologLogger(b, logger)
 }
 
 func BenchmarkZerologPretty(b *testing.B) {
-	logger, close, err := NewZerologPrettyLogger(zerolog.InfoLevel, false, false)
-	if err != nil {
-		b.Fatalf("Failed to create logger: %v", err)
-	}
-	defer close()
+	f := openDevNull(b)
+	logger := NewZerologPrettyLogger(f, zerolog.InfoLevel, false, false)
 
 	benchmarkZerologLogger(b, logger)
 }

@@ -1,8 +1,8 @@
 package logging
 
 import (
+	"io"
 	"log/slog"
-	"os"
 	"time"
 
 	"github.com/database64128/tint"
@@ -14,14 +14,10 @@ import (
 // NewProductionConsoleZapLogger creates a new [*zap.Logger] with reasonable defaults for production console environments.
 //
 // See [NewProductionConsoleEncoderConfig] for information on the default encoder configuration.
-func NewProductionConsoleZapLogger(noColor, noTime, addCaller bool, level zapcore.Level) (*zap.Logger, func() error, error) {
-	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func NewProductionConsoleZapLogger(ws zapcore.WriteSyncer, level zapcore.Level, noColor, noTime, addCaller bool) *zap.Logger {
 	cfg := NewProductionConsoleEncoderConfig(noColor, noTime)
 	enc := zapcore.NewConsoleEncoder(cfg)
+	core := zapcore.NewCore(enc, zapcore.Lock(ws), level)
 	var opts []zap.Option
 	if noTime {
 		opts = append(opts, zap.WithClock(fakeClock{})) // Note that the sampler requires a real clock.
@@ -29,10 +25,7 @@ func NewProductionConsoleZapLogger(noColor, noTime, addCaller bool, level zapcor
 	if addCaller {
 		opts = append(opts, zap.AddCaller())
 	}
-	return zap.New(
-		zapcore.NewCore(enc, zapcore.Lock(f), level),
-		opts...,
-	), f.Close, nil
+	return zap.New(core, opts...)
 }
 
 // NewProductionConsoleEncoderConfig returns an opinionated [zapcore.EncoderConfig] for production console environments.
@@ -81,12 +74,7 @@ func (fakeClock) NewTicker(d time.Duration) *time.Ticker {
 }
 
 // NewTintSlogger creates a new [*slog.Logger] with a tint handler.
-func NewTintSlogger(level slog.Level, noColor, noTime bool) (*slog.Logger, func() error, error) {
-	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func NewTintSlogger(w io.Writer, level slog.Level, noColor, noTime bool) *slog.Logger {
 	var replaceAttr func(groups []string, attr slog.Attr) slog.Attr
 	if noTime {
 		replaceAttr = func(groups []string, attr slog.Attr) slog.Attr {
@@ -97,40 +85,30 @@ func NewTintSlogger(level slog.Level, noColor, noTime bool) (*slog.Logger, func(
 		}
 	}
 
-	return slog.New(tint.NewHandler(f, &tint.Options{
+	return slog.New(tint.NewHandler(w, &tint.Options{
 		Level:       level,
 		ReplaceAttr: replaceAttr,
 		NoColor:     noColor,
-	})), f.Close, nil
+	}))
 }
 
 // NewZerologLogger creates a new [zerolog.Logger].
-func NewZerologLogger(level zerolog.Level, noTime bool) (zerolog.Logger, func() error, error) {
-	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
-	if err != nil {
-		return zerolog.Logger{}, nil, err
-	}
-
-	logger := zerolog.New(f).Level(level)
+func NewZerologLogger(w io.Writer, level zerolog.Level, noTime bool) zerolog.Logger {
+	logger := zerolog.New(w).Level(level)
 	if noTime {
-		return logger, f.Close, nil
+		return logger
 	}
-	return logger.With().Timestamp().Logger(), f.Close, nil
+	return logger.With().Timestamp().Logger()
 }
 
 // NewZerologPrettyLogger creates a new [zerolog.Logger] with a pretty console writer.
-func NewZerologPrettyLogger(level zerolog.Level, noColor, noTime bool) (zerolog.Logger, func() error, error) {
-	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
-	if err != nil {
-		return zerolog.Logger{}, nil, err
-	}
-
+func NewZerologPrettyLogger(w io.Writer, level zerolog.Level, noColor, noTime bool) zerolog.Logger {
 	logger := zerolog.New(zerolog.ConsoleWriter{
-		Out:     f,
+		Out:     w,
 		NoColor: noColor,
 	}).Level(level)
 	if noTime {
-		return logger, f.Close, nil
+		return logger
 	}
-	return logger.With().Timestamp().Logger(), f.Close, nil
+	return logger.With().Timestamp().Logger()
 }
