@@ -7,7 +7,7 @@ require (
 	github.com/database64128/tint v0.0.0-20241210020910-ebdf04e854de
 	github.com/rs/zerolog v1.33.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.30.0
+	golang.org/x/crypto v0.31.0
 	lukechampine.com/blake3 v1.3.0
 )
 
