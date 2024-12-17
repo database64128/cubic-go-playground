@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/database64128/tint"
+	"github.com/lmittmann/tint"
 	"github.com/rs/zerolog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

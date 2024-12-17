@@ -11,7 +11,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/database64128/tint"
+	"github.com/lmittmann/tint"
 )
 
 // Config is a set of options for a [*Logger].
