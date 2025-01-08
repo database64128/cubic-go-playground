@@ -4,7 +4,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"cmp"
 	"encoding/json"
 	"fmt"
@@ -19,28 +18,17 @@ func main() {
 	var event Event
 	addrByCSID := make(map[uint64]netip.Addr)
 	bytesByIP := make(map[netip.Addr]uint64)
-	r := bufio.NewReader(os.Stdin)
+	r := newEventJSONReader(os.Stdin)
+	dec := json.NewDecoder(r)
 
 	for {
-		line, err := r.ReadSlice('\n')
-		if err != nil {
+		event = Event{}
+		if err := dec.Decode(&event); err != nil {
 			if err == io.EOF {
 				break
 			}
-			fmt.Fprintf(os.Stderr, "Failed to read line: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to decode JSON: %v\n", err)
 			os.Exit(1)
-		}
-
-		start := bytes.IndexByte(line, '{')
-		if start < 0 {
-			continue
-		}
-		data := line[start:]
-
-		event = Event{}
-		if err := json.Unmarshal(data, &event); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to unmarshal event %q: %v\n", data, err)
-			continue
 		}
 
 		addr := event.ClientAddress.Addr()
@@ -75,6 +63,56 @@ func main() {
 		output = append(output, '\n')
 	}
 	os.Stdout.Write(output)
+}
+
+// eventJSONReader streams JSON values from the inner reader,
+// discarding non-JSON data at the beginning of each line.
+type eventJSONReader struct {
+	r        *bufio.Reader
+	leftover []byte
+	err      error
+}
+
+func newEventJSONReader(r io.Reader) *eventJSONReader {
+	return &eventJSONReader{
+		r: bufio.NewReaderSize(r, 128*1024),
+	}
+}
+
+func (r *eventJSONReader) Read(p []byte) (n int, err error) {
+	if len(r.leftover) > 0 {
+		n = copy(p, r.leftover)
+		p = p[n:]
+		r.leftover = r.leftover[n:]
+	}
+
+	if r.err != nil {
+		return n, r.err
+	}
+
+	for len(p) > 0 {
+		if _, err = r.r.ReadSlice('{'); err != nil {
+			return n, err
+		}
+		n++
+		p[0] = '{'
+		p = p[1:]
+
+		line, err := r.r.ReadSlice('\n')
+		nn := copy(p, line)
+		n += nn
+		p = p[nn:]
+		if nn < len(line) {
+			r.leftover = line[nn:]
+			r.err = err
+			return n, nil
+		}
+		if err != nil {
+			return n, err
+		}
+	}
+
+	return n, nil
 }
 
 type Event struct {
