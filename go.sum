@@ -1,3 +1,5 @@
+github.com/aromatt/netipds v0.1.8 h1:UoGFEYr8uUaZGt/3LdcEIo2C0Skg0vZBf9V+2h0Ulhk=
+github.com/aromatt/netipds v0.1.8/go.mod h1:TVWwAV/IghERh+218SzJz1DfixOswt5/BhiOAUs99Hc=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/database64128/netx-go v0.0.0-20240905055117-62795b8b054a h1:t4SDi0pmNkryzKdM4QF3o5vqSP4GRjeZD/6j3nyxNP0=
 github.com/database64128/netx-go v0.0.0-20240905055117-62795b8b054a/go.mod h1:7K2NQKbabB5mBl41vF6YayYl5g7YpDwc4dQ5iMpP3Lg=
@@ -29,6 +31,8 @@ go.uber.org/multierr v1.10.0 h1:S0h4aNzvfcFsC3dRF1jLoaov7oRaKqRGC/pUEJ2yvPQ=
 go.uber.org/multierr v1.10.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 go.uber.org/zap v1.27.0 h1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=
 go.uber.org/zap v1.27.0/go.mod h1:GB2qFLM7cTU87MWRP2mPIjqfIDnGu+VIO4V/SdhGo2E=
+go4.org/netipx v0.0.0-20231129151722-fdeea329fbba h1:0b9z3AuHCjxk0x/opv64kcgZLBseWJUpBw5I82+2U4M=
+go4.org/netipx v0.0.0-20231129151722-fdeea329fbba/go.mod h1:PLyyIXexvUFg3Owu6p/WfdlivPbZJsZdgWZlrGope/Y=
 golang.org/x/crypto v0.32.0 h1:euUpcYgM8WcP71gNpTqQCn6rC2t6ULUPiOzfWaXVVfc=
 golang.org/x/crypto v0.32.0/go.mod h1:ZnnJkOaASj8g0AjIduWNlq2NRxL0PlBrbKVyZ6V/Ugc=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
