@@ -9,7 +9,7 @@ require (
 	github.com/rs/zerolog v1.33.0
 	go.uber.org/zap v1.27.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.33.0
 	lukechampine.com/blake3 v1.3.0
 )
 
@@ -19,5 +19,5 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 )
