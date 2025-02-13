@@ -109,13 +109,11 @@ func BenchmarkIPSetContains(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	var i int
-	for b.Loop() {
+	for i := 0; b.Loop(); i++ {
 		cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
 		if result := s.Contains(cc.addr); result != cc.want {
 			b.Errorf("s.Contains(%q) = %v, want %v", cc.addr, result, cc.want)
 		}
-		i++
 	}
 }
 
@@ -179,14 +177,12 @@ func BenchmarkPrefixSetContains(b *testing.B) {
 				b.Fatal(err)
 			}
 
-			var i int
-			for b.Loop() {
+			for i := 0; b.Loop(); i++ {
 				cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
 				prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
 				if result := s.Encompasses(prefix); result != cc.want {
 					b.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
 				}
-				i++
 			}
 		})
 	}
