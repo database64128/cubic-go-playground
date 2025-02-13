@@ -96,7 +96,7 @@ func TestIPSet(t *testing.T) {
 }
 
 func BenchmarkIPSetFromText(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		if _, err := IPSetFromText(testPrefixSetText); err != nil {
 			b.Fatal(err)
 		}
@@ -109,13 +109,13 @@ func BenchmarkIPSetContains(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	b.ResetTimer()
-
-	for i := range b.N {
+	var i int
+	for b.Loop() {
 		cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
 		if result := s.Contains(cc.addr); result != cc.want {
 			b.Errorf("s.Contains(%q) = %v, want %v", cc.addr, result, cc.want)
 		}
+		i++
 	}
 }
 
@@ -150,7 +150,7 @@ func TestPrefixSet(t *testing.T) {
 }
 
 func BenchmarkPrefixSetFromText(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		if _, err := PrefixSetFromText(testPrefixSetText); err != nil {
 			b.Fatal(err)
 		}
@@ -158,7 +158,7 @@ func BenchmarkPrefixSetFromText(b *testing.B) {
 }
 
 func BenchmarkPrefixSetFromTextLazy(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		if _, err := PrefixSetFromTextLazy(testPrefixSetText); err != nil {
 			b.Fatal(err)
 		}
@@ -179,14 +179,14 @@ func BenchmarkPrefixSetContains(b *testing.B) {
 				b.Fatal(err)
 			}
 
-			b.ResetTimer()
-
-			for i := range b.N {
+			var i int
+			for b.Loop() {
 				cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
 				prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
 				if result := s.Encompasses(prefix); result != cc.want {
 					b.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
 				}
+				i++
 			}
 		})
 	}

@@ -24,9 +24,7 @@ func BenchmarkX25519(b *testing.B) {
 	pubkey := key.PublicKey()
 	pubkeyHeader := (*publicKeyHeader)(unsafe.Pointer(pubkey))
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		pubkeyHeader.publicKey, err = key.ECDH(pubkey)
 		if err != nil {
 			b.Fatal(err)
@@ -36,9 +34,7 @@ func BenchmarkX25519(b *testing.B) {
 
 func handshakeSetup() (h *blake3.Hasher, clientKey, serverKey *ecdh.PrivateKey, clientPubkey, serverPubkey *ecdh.PublicKey, err error) {
 	psk := make([]byte, 32)
-	if _, err = rand.Read(psk); err != nil {
-		return
-	}
+	rand.Read(psk)
 	h = blake3.New(64, psk)
 
 	clientKey, err = ecdh.X25519().GenerateKey(rand.Reader)
@@ -125,7 +121,7 @@ func serverRespond(h *blake3.Hasher, serverKey *ecdh.PrivateKey, clientPubkey, c
 	return
 }
 
-func clientRespond(h *blake3.Hasher, clientKey, clientEphemeralKey *ecdh.PrivateKey, serverPubkey, serverEphemeralPubkey *ecdh.PublicKey) (sum3 []byte, err error) {
+func clientRespond(h *blake3.Hasher, clientKey, clientEphemeralKey *ecdh.PrivateKey, serverEphemeralPubkey *ecdh.PublicKey) (sum3 []byte, err error) {
 	// ee
 	result, err := clientEphemeralKey.ECDH(serverEphemeralPubkey)
 	if err != nil {
@@ -164,7 +160,7 @@ func TestHandshake(t *testing.T) {
 		t.Fatal("sum0 != sum1")
 	}
 
-	sum3, err := clientRespond(h, clientKey, clientEphemeralKey, serverPubkey, serverEphemeralPubkey)
+	sum3, err := clientRespond(h, clientKey, clientEphemeralKey, serverEphemeralPubkey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,9 +175,7 @@ func BenchmarkHandshake(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		clientEphemeralKey, clientEphemeralPubkey, sum0, err := clientInitiate(h, clientKey, serverPubkey)
 		if err != nil {
 			b.Fatal(err)
@@ -195,7 +189,7 @@ func BenchmarkHandshake(b *testing.B) {
 			b.Fatal("sum0 != sum1")
 		}
 
-		sum3, err := clientRespond(h, clientKey, clientEphemeralKey, serverPubkey, serverEphemeralPubkey)
+		sum3, err := clientRespond(h, clientKey, clientEphemeralKey, serverEphemeralPubkey)
 		if err != nil {
 			b.Fatal(err)
 		}

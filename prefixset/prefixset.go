@@ -2,6 +2,7 @@ package prefixset
 
 import (
 	"net/netip"
+	"strings"
 
 	"github.com/aromatt/netipds"
 )
@@ -17,7 +18,7 @@ func PrefixSetFromTextLazy(text string) (*netipds.PrefixSet, error) {
 }
 
 func prefixSetFromText(text string, sb netipds.PrefixSetBuilder) (*netipds.PrefixSet, error) {
-	for line := range lines(text) {
+	for line := range strings.Lines(text) {
 		if len(line) == 0 || line[0] == '#' {
 			continue
 		}

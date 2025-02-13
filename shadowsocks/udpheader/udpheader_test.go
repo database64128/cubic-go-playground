@@ -13,24 +13,16 @@ import (
 )
 
 var (
-	key       []byte
-	plaintext []byte
+	key       = make([]byte, 32)
+	plaintext = make([]byte, aes.BlockSize)
 	c         cipher.Block
 )
 
 func init() {
-	key = make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		panic(err)
-	}
+	rand.Read(key)
+	rand.Read(plaintext)
 
-	plaintext = make([]byte, 16)
-	_, err = rand.Read(plaintext)
-	if err != nil {
-		panic(err)
-	}
-
+	var err error
 	c, err = aes.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -41,18 +33,12 @@ func BenchmarkGenSaltHkdfSha1(b *testing.B) {
 	salt := make([]byte, 32)
 	subkey := make([]byte, 32)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_, err := rand.Read(salt)
-		if err != nil {
-			b.Fatal(err)
-		}
+	for b.Loop() {
+		rand.Read(salt)
 
 		r := hkdf.New(sha1.New, key, salt, []byte("ss-subkey"))
 
-		_, err = io.ReadFull(r, subkey)
-		if err != nil {
+		if _, err := io.ReadFull(r, subkey); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -63,13 +49,8 @@ func BenchmarkGenSaltBlake3(b *testing.B) {
 	copy(keyMaterial, key)
 	subkey := make([]byte, 32)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_, err := rand.Read(keyMaterial[32:])
-		if err != nil {
-			b.Fatal(err)
-		}
+	for b.Loop() {
+		rand.Read(keyMaterial[32:])
 
 		blake3.DeriveKey(subkey, "shadowsocks 2022 session subkey", keyMaterial)
 	}
@@ -78,9 +59,7 @@ func BenchmarkGenSaltBlake3(b *testing.B) {
 func BenchmarkAesEcbHeaderEncryption(b *testing.B) {
 	ciphertext := make([]byte, 16)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		c.Encrypt(ciphertext, plaintext)
 	}
 }
@@ -91,9 +70,7 @@ func BenchmarkAesEcbHeaderDecryption(b *testing.B) {
 
 	decrypted := make([]byte, 16)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		c.Decrypt(decrypted, ciphertext)
 	}
 }

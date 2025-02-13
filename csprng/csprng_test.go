@@ -19,35 +19,22 @@ const (
 func BenchmarkCryptoRandomSmall(b *testing.B) {
 	buf := make([]byte, testSmallSize)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_, err := rand.Read(buf)
-		if err != nil {
-			b.Fatal(err)
-		}
+	for b.Loop() {
+		rand.Read(buf)
 	}
 }
 
 func BenchmarkCryptoRandomBig(b *testing.B) {
 	buf := make([]byte, testBigSize)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_, err := rand.Read(buf)
-		if err != nil {
-			b.Fatal(err)
-		}
+	for b.Loop() {
+		rand.Read(buf)
 	}
 }
 
-func initBlake3KeyedHash(b *testing.B, size int) io.Reader {
+func initBlake3KeyedHash(size int) io.Reader {
 	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(key)
 
 	h := blake3.New(size, key)
 	return h.XOF()
@@ -55,11 +42,9 @@ func initBlake3KeyedHash(b *testing.B, size int) io.Reader {
 
 func BenchmarkBlake3KeyedHashSmall(b *testing.B) {
 	buf := make([]byte, testSmallSize)
-	r := initBlake3KeyedHash(b, testSmallSize)
+	r := initBlake3KeyedHash(testSmallSize)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, err := r.Read(buf)
 		if err != nil {
 			b.Fatal(err)
@@ -69,11 +54,9 @@ func BenchmarkBlake3KeyedHashSmall(b *testing.B) {
 
 func BenchmarkBlake3KeyedHashBig(b *testing.B) {
 	buf := make([]byte, testBigSize)
-	r := initBlake3KeyedHash(b, testBigSize)
+	r := initBlake3KeyedHash(testBigSize)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, err := r.Read(buf)
 		if err != nil {
 			b.Fatal(err)
@@ -82,22 +65,18 @@ func BenchmarkBlake3KeyedHashBig(b *testing.B) {
 }
 
 func initAesCtr(b *testing.B, keySize int) cipher.Stream {
+	b.Helper()
+
 	key := make([]byte, keySize)
-	_, err := rand.Read(key)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(key)
 
 	cb, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 
 	iv := make([]byte, cb.BlockSize())
-	_, err = rand.Read(iv)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(iv)
 
 	return cipher.NewCTR(cb, iv)
 }
@@ -106,9 +85,7 @@ func BenchmarkAes128CtrSmall(b *testing.B) {
 	buf := make([]byte, testSmallSize)
 	cs := initAesCtr(b, 16)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		cs.XORKeyStream(buf, buf)
 	}
 }
@@ -117,9 +94,7 @@ func BenchmarkAes128CtrBig(b *testing.B) {
 	buf := make([]byte, testBigSize)
 	cs := initAesCtr(b, 16)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		cs.XORKeyStream(buf, buf)
 	}
 }
@@ -128,9 +103,7 @@ func BenchmarkAes256CtrSmall(b *testing.B) {
 	buf := make([]byte, testSmallSize)
 	cs := initAesCtr(b, 32)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		cs.XORKeyStream(buf, buf)
 	}
 }
@@ -139,25 +112,19 @@ func BenchmarkAes256CtrBig(b *testing.B) {
 	buf := make([]byte, testBigSize)
 	cs := initAesCtr(b, 32)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		cs.XORKeyStream(buf, buf)
 	}
 }
 
 func initChaCha20(b *testing.B) cipher.Stream {
-	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		b.Fatal(err)
-	}
+	b.Helper()
+
+	key := make([]byte, chacha20.KeySize)
+	rand.Read(key)
 
 	nonce := make([]byte, chacha20.NonceSize)
-	_, err = rand.Read(nonce)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(nonce)
 
 	cs, err := chacha20.NewUnauthenticatedCipher(key, nonce)
 	if err != nil {
@@ -170,9 +137,7 @@ func BenchmarkChaCha20Small(b *testing.B) {
 	buf := make([]byte, testSmallSize)
 	cs := initChaCha20(b)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		cs.XORKeyStream(buf, buf)
 	}
 }
@@ -181,9 +146,7 @@ func BenchmarkChaCha20Big(b *testing.B) {
 	buf := make([]byte, testBigSize)
 	cs := initChaCha20(b)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		cs.XORKeyStream(buf, buf)
 	}
 }

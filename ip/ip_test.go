@@ -13,13 +13,13 @@ var (
 
 func BenchmarkAddrPortMappedEqual(b *testing.B) {
 	b.Run("Equal", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortMappedEqual(addrPort4, addrPort4)
 		}
 	})
 
 	b.Run("NotEqual", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortMappedEqual(addrPort4, addrPort4in6)
 		}
 	})
@@ -27,13 +27,13 @@ func BenchmarkAddrPortMappedEqual(b *testing.B) {
 
 func BenchmarkAddrPortMappedEqualUnsafe(b *testing.B) {
 	b.Run("Equal", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortMappedEqualUnsafe(addrPort4, addrPort4)
 		}
 	})
 
 	b.Run("NotEqual", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortMappedEqualUnsafe(addrPort4, addrPort4in6)
 		}
 	})
@@ -41,13 +41,13 @@ func BenchmarkAddrPortMappedEqualUnsafe(b *testing.B) {
 
 func BenchmarkAddrPortv4Mappedv6(b *testing.B) {
 	b.Run("Is4", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortv4Mappedv6(addrPort4)
 		}
 	})
 
 	b.Run("Is4In6", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortv4Mappedv6(addrPort4in6)
 		}
 	})
@@ -55,13 +55,13 @@ func BenchmarkAddrPortv4Mappedv6(b *testing.B) {
 
 func BenchmarkAddrPortv4Mappedv6Unsafe(b *testing.B) {
 	b.Run("Is4", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortv4Mappedv6Unsafe(addrPort4)
 		}
 	})
 
 	b.Run("Is4In6", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			AddrPortv4Mappedv6Unsafe(addrPort4in6)
 		}
 	})

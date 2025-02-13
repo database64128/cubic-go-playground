@@ -39,14 +39,11 @@ func main() {
 		return
 	}
 	defer conn.Close()
-	log.Printf("Connected %s -> %s", conn.LocalAddr(), *address)
+	log.Printf("Connected %s -> %s", conn.LocalAddr(), conn.RemoteAddr())
 
 	if *size > 0 {
 		buf := make([]byte, *size)
-		_, err = rand.Read(buf)
-		if err != nil {
-			log.Fatal(err)
-		}
+		rand.Read(buf)
 
 		_, err = conn.Write(buf)
 		if err != nil {

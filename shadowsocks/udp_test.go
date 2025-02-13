@@ -16,16 +16,10 @@ import (
 
 const testPayloadLength = 1400
 
-var (
-	key []byte
-)
+var key = make([]byte, 32)
 
 func init() {
-	key = make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		panic(err)
-	}
+	rand.Read(key)
 }
 
 func BenchmarkShadowsocksAEADAes256GcmEncryption(b *testing.B) {
@@ -35,25 +29,16 @@ func BenchmarkShadowsocksAEADAes256GcmEncryption(b *testing.B) {
 
 	// Random payload
 	payload := buf[32 : 32+testPayloadLength]
-	_, err := rand.Read(payload)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(payload)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		// Generate random salt
-		_, err := rand.Read(buf[:32])
-		if err != nil {
-			b.Fatal(err)
-		}
+		rand.Read(buf[:32])
 
 		// Derive subkey
 		r := hkdf.New(sha1.New, key, buf[:32], []byte("ss-subkey"))
 
-		_, err = io.ReadFull(r, subkey)
-		if err != nil {
+		if _, err := io.ReadFull(r, subkey); err != nil {
 			b.Fatal(err)
 		}
 
@@ -79,22 +64,14 @@ func BenchmarkShadowsocksAEADAes256GcmWithBlake3Encryption(b *testing.B) {
 
 	// Random payload
 	payload := buf[64 : 64+testPayloadLength]
-	_, err := rand.Read(payload)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(payload)
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		// Copy key so buf[:64] can be used as key material
 		copy(buf, key)
 
 		// Generate random salt
-		_, err := rand.Read(buf[32:64])
-		if err != nil {
-			b.Fatal(err)
-		}
+		rand.Read(buf[32:64])
 
 		// Derive subkey
 		blake3.DeriveKey(subkey, "shadowsocks 2022 session subkey", buf[:64])
@@ -121,10 +98,7 @@ func BenchmarkDraftSeparateHeaderAes256GcmEncryption(b *testing.B) {
 
 	// Random payload
 	payload := buf[16 : 16+testPayloadLength]
-	_, err := rand.Read(payload)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(payload)
 
 	// Header block cipher
 	aesecb, err := aes.NewCipher(key)
@@ -136,10 +110,7 @@ func BenchmarkDraftSeparateHeaderAes256GcmEncryption(b *testing.B) {
 	keyMaterial := make([]byte, 32+8) // key + session id
 	sid := keyMaterial[32:]
 	copy(keyMaterial, key)
-	_, err = rand.Read(sid)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(sid)
 
 	subkey := make([]byte, 32)
 
@@ -155,9 +126,7 @@ func BenchmarkDraftSeparateHeaderAes256GcmEncryption(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		// Session id
 		copy(buf, sid)
 
@@ -178,24 +147,16 @@ func BenchmarkDraftXChaCha20Poly1305Encryption(b *testing.B) {
 
 	// Random payload
 	payload := buf[24 : 24+testPayloadLength]
-	_, err := rand.Read(payload)
-	if err != nil {
-		b.Fatal(err)
-	}
+	rand.Read(payload)
 
 	aead, err := chacha20poly1305.NewX(key)
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		// Random nonce
-		_, err = rand.Read(buf[:24])
-		if err != nil {
-			b.Fatal(err)
-		}
+		rand.Read(buf[:24])
 
 		// Seal AEAD
 		aead.Seal(payload[:0], buf[:24], payload, nil)

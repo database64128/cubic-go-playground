@@ -2,6 +2,7 @@ package prefixset
 
 import (
 	"net/netip"
+	"strings"
 
 	"go4.org/netipx"
 )
@@ -10,7 +11,7 @@ import (
 func IPSetFromText(text string) (*netipx.IPSet, error) {
 	var sb netipx.IPSetBuilder
 
-	for line := range lines(text) {
+	for line := range strings.Lines(text) {
 		if len(line) == 0 || line[0] == '#' {
 			continue
 		}
