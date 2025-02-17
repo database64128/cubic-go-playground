@@ -4,7 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	mrand "math/rand"
+	mrand "math/rand/v2"
 	"testing"
 
 	"golang.org/x/crypto/chacha20poly1305"
@@ -68,7 +68,7 @@ func BenchmarkZeroOverheadAesEncryptPartialWgHsInitRandomPadding(b *testing.B) {
 	for b.Loop() {
 		aesecb.Encrypt(buf[:16], buf[:16])
 
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		rand.Read(buf[wireguardHandshakeInitiationMessageLength : wireguardHandshakeInitiationMessageLength+paddingLen])
 	}
 }
@@ -80,7 +80,7 @@ func BenchmarkZeroOverheadAesEncryptPartialWgHsInitBlake3KeyedHashPadding(b *tes
 	for b.Loop() {
 		aesecb.Encrypt(buf[:16], buf[:16])
 
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		_, err := blake3xof.Read(buf[wireguardHandshakeInitiationMessageLength : wireguardHandshakeInitiationMessageLength+paddingLen])
 		if err != nil {
 			b.Fatal(err)
@@ -152,7 +152,7 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInitRandomPadding(b *te
 	writeWgHsInit(wg)
 
 	for b.Loop() {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
 		totalLen := validLen + paddingLen
 		nonce := buf[:nonceSize]
@@ -180,7 +180,7 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptPartialWgHsInitBlake3KeyedHashPadd
 	writeWgHsInit(wg)
 
 	for b.Loop() {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
 		totalLen := validLen + paddingLen
 		nonce := buf[:nonceSize]
@@ -248,7 +248,7 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitRandomPadding(b *testi
 	writeWgHsInit(buf[nonceSize:])
 
 	for b.Loop() {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
 		totalLen := validLen + paddingLen
 		nonce := buf[:nonceSize]
@@ -272,7 +272,7 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitBlake3KeyedHashPadding
 	writeWgHsInit(buf[nonceSize:])
 
 	for b.Loop() {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		validLen := nonceSize + wireguardHandshakeInitiationMessageLength + overhead
 		totalLen := validLen + paddingLen
 		nonce := buf[:nonceSize]
@@ -301,7 +301,7 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitEncryptPaddingRandomNo
 	writeWgHsInit(buf[nonceSize:])
 
 	for b.Loop() {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		nonce := buf[:nonceSize]
 
 		// Generate nonce
@@ -318,7 +318,7 @@ func BenchmarkParanoidXChaCha20Poly1305EncryptFullWgHsInitEncryptPaddingBlake3Ke
 	writeWgHsInit(buf[nonceSize:])
 
 	for b.Loop() {
-		paddingLen := mrand.Intn(maxPaddingLength + 1)
+		paddingLen := mrand.IntN(maxPaddingLength + 1)
 		nonce := buf[:nonceSize]
 
 		// Generate nonce
