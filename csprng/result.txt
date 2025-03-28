@@ -1,0 +1,17 @@
+goos: linux
+goarch: amd64
+pkg: github.com/database64128/cubic-go-playground/csprng
+cpu: Intel(R) Core(TM) Ultra 9 285K
+BenchmarkCryptoRandomSmall-24       	29430300	        40.59 ns/op	 591.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCryptoRandomBig-24         	 1228082	       966.1 ns/op	1059.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkBlake3KeyedHashSmall-24    	180633930	         6.280 ns/op	3821.49 MB/s	       0 B/op	       0 allocs/op
+BenchmarkBlake3KeyedHashBig-24      	 7683826	       156.1 ns/op	6560.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAes128CtrSmall-24          	91473624	        12.95 ns/op	1853.85 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAes128CtrBig-24            	19317519	        62.17 ns/op	16471.75 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAes256CtrSmall-24          	95988764	        12.54 ns/op	1913.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAes256CtrBig-24            	14150025	        84.73 ns/op	12085.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkChaCha20Small-24           	41378523	        28.65 ns/op	 837.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkChaCha20Big-24             	 1290866	       928.6 ns/op	1102.70 MB/s	       0 B/op	       0 allocs/op
+PASS
+coverage: [no statements]
+ok  	github.com/database64128/cubic-go-playground/csprng	11.897s
