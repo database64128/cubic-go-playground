@@ -23,6 +23,8 @@ func init() {
 }
 
 func BenchmarkShadowsocksAEADAes256GcmEncryption(b *testing.B) {
+	b.SetBytes(testPayloadLength)
+
 	nonce := make([]byte, 12)
 	subkey := make([]byte, 32)
 	buf := make([]byte, 32+testPayloadLength+16)
@@ -58,6 +60,8 @@ func BenchmarkShadowsocksAEADAes256GcmEncryption(b *testing.B) {
 }
 
 func BenchmarkShadowsocksAEADAes256GcmWithBlake3Encryption(b *testing.B) {
+	b.SetBytes(testPayloadLength)
+
 	nonce := make([]byte, 12)
 	subkey := make([]byte, 32)
 	buf := make([]byte, 64+testPayloadLength+16)
@@ -92,6 +96,8 @@ func BenchmarkShadowsocksAEADAes256GcmWithBlake3Encryption(b *testing.B) {
 }
 
 func BenchmarkDraftSeparateHeaderAes256GcmEncryption(b *testing.B) {
+	b.SetBytes(testPayloadLength)
+
 	var counter uint64
 
 	buf := make([]byte, 16+testPayloadLength+16)
@@ -143,6 +149,8 @@ func BenchmarkDraftSeparateHeaderAes256GcmEncryption(b *testing.B) {
 }
 
 func BenchmarkDraftXChaCha20Poly1305Encryption(b *testing.B) {
+	b.SetBytes(testPayloadLength)
+
 	buf := make([]byte, 24+testPayloadLength+16)
 
 	// Random payload

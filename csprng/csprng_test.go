@@ -17,6 +17,7 @@ const (
 )
 
 func BenchmarkCryptoRandomSmall(b *testing.B) {
+	b.SetBytes(testSmallSize)
 	buf := make([]byte, testSmallSize)
 
 	for b.Loop() {
@@ -25,6 +26,7 @@ func BenchmarkCryptoRandomSmall(b *testing.B) {
 }
 
 func BenchmarkCryptoRandomBig(b *testing.B) {
+	b.SetBytes(testBigSize)
 	buf := make([]byte, testBigSize)
 
 	for b.Loop() {
@@ -41,6 +43,7 @@ func initBlake3KeyedHash(size int) io.Reader {
 }
 
 func BenchmarkBlake3KeyedHashSmall(b *testing.B) {
+	b.SetBytes(testSmallSize)
 	buf := make([]byte, testSmallSize)
 	r := initBlake3KeyedHash(testSmallSize)
 
@@ -53,6 +56,7 @@ func BenchmarkBlake3KeyedHashSmall(b *testing.B) {
 }
 
 func BenchmarkBlake3KeyedHashBig(b *testing.B) {
+	b.SetBytes(testBigSize)
 	buf := make([]byte, testBigSize)
 	r := initBlake3KeyedHash(testBigSize)
 
@@ -82,6 +86,7 @@ func initAesCtr(b *testing.B, keySize int) cipher.Stream {
 }
 
 func BenchmarkAes128CtrSmall(b *testing.B) {
+	b.SetBytes(testSmallSize)
 	buf := make([]byte, testSmallSize)
 	cs := initAesCtr(b, 16)
 
@@ -91,6 +96,7 @@ func BenchmarkAes128CtrSmall(b *testing.B) {
 }
 
 func BenchmarkAes128CtrBig(b *testing.B) {
+	b.SetBytes(testBigSize)
 	buf := make([]byte, testBigSize)
 	cs := initAesCtr(b, 16)
 
@@ -100,6 +106,7 @@ func BenchmarkAes128CtrBig(b *testing.B) {
 }
 
 func BenchmarkAes256CtrSmall(b *testing.B) {
+	b.SetBytes(testSmallSize)
 	buf := make([]byte, testSmallSize)
 	cs := initAesCtr(b, 32)
 
@@ -109,6 +116,7 @@ func BenchmarkAes256CtrSmall(b *testing.B) {
 }
 
 func BenchmarkAes256CtrBig(b *testing.B) {
+	b.SetBytes(testBigSize)
 	buf := make([]byte, testBigSize)
 	cs := initAesCtr(b, 32)
 
@@ -134,6 +142,7 @@ func initChaCha20(b *testing.B) cipher.Stream {
 }
 
 func BenchmarkChaCha20Small(b *testing.B) {
+	b.SetBytes(testSmallSize)
 	buf := make([]byte, testSmallSize)
 	cs := initChaCha20(b)
 
@@ -143,6 +152,7 @@ func BenchmarkChaCha20Small(b *testing.B) {
 }
 
 func BenchmarkChaCha20Big(b *testing.B) {
+	b.SetBytes(testBigSize)
 	buf := make([]byte, testBigSize)
 	cs := initChaCha20(b)
 
