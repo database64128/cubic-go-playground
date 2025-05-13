@@ -12,11 +12,6 @@ func PrefixSetFromText(text string) (*netipds.PrefixSet, error) {
 	return prefixSetFromText(text, netipds.PrefixSetBuilder{})
 }
 
-// PrefixSetFromTextLazy is like [PrefixSetFromText] but uses a lazy builder.
-func PrefixSetFromTextLazy(text string) (*netipds.PrefixSet, error) {
-	return prefixSetFromText(text, netipds.PrefixSetBuilder{Lazy: true})
-}
-
 func prefixSetFromText(text string, sb netipds.PrefixSetBuilder) (*netipds.PrefixSet, error) {
 	for line := range strings.Lines(text) {
 		if len(line) == 0 || line[0] == '#' {

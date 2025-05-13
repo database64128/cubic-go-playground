@@ -3,8 +3,6 @@ package prefixset
 import (
 	"net/netip"
 	"testing"
-
-	"github.com/aromatt/netipds"
 )
 
 const testPrefixSetText = `# Private prefixes.
@@ -28,8 +26,7 @@ fe80::/10
 ff00::/8
 `
 
-const compactedPrefixSetText = `::1/128
-0.0.0.0/8
+const compactedPrefixSetText = `0.0.0.0/8
 10.0.0.0/8
 100.64.0.0/10
 127.0.0.0/8
@@ -43,6 +40,7 @@ const compactedPrefixSetText = `::1/128
 198.51.100.0/24
 203.0.113.0/24
 224.0.0.0/3
+::1/128
 fc00::/7
 fe80::/10
 ff00::/8
@@ -118,32 +116,21 @@ func BenchmarkIPSetContains(b *testing.B) {
 }
 
 func TestPrefixSet(t *testing.T) {
-	for _, c := range []struct {
-		name     string
-		fromText func(string) (*netipds.PrefixSet, error)
-	}{
-		{"FromText", PrefixSetFromText},
-		{"FromTextLazy", PrefixSetFromTextLazy},
-	} {
-		t.Run(c.name, func(t *testing.T) {
-			s, err := c.fromText(testPrefixSetText)
-			if err != nil {
-				t.Fatal(err)
-			}
+	s, err := PrefixSetFromText(testPrefixSetText)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-			for _, cc := range testPrefixSetContainsCases {
-				prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
-				if result := s.Encompasses(prefix); result != cc.want {
-					t.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
-				}
-			}
+	for _, cc := range testPrefixSetContainsCases {
+		prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
+		if result := s.Encompasses(prefix); result != cc.want {
+			t.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
+		}
+	}
 
-			text := PrefixSetToText(s)
-			if string(text) != compactedPrefixSetText {
-				// TODO: Change back to Errorf once upstream merges the fix.
-				t.Logf("PrefixSetToText(s) = %q, want %q", text, compactedPrefixSetText)
-			}
-		})
+	text := PrefixSetToText(s)
+	if string(text) != compactedPrefixSetText {
+		t.Errorf("PrefixSetToText(s) = %q, want %q", text, compactedPrefixSetText)
 	}
 }
 
@@ -155,35 +142,17 @@ func BenchmarkPrefixSetFromText(b *testing.B) {
 	}
 }
 
-func BenchmarkPrefixSetFromTextLazy(b *testing.B) {
-	for b.Loop() {
-		if _, err := PrefixSetFromTextLazy(testPrefixSetText); err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
 func BenchmarkPrefixSetContains(b *testing.B) {
-	for _, c := range []struct {
-		name     string
-		fromText func(string) (*netipds.PrefixSet, error)
-	}{
-		{"FromText", PrefixSetFromText},
-		{"FromTextLazy", PrefixSetFromTextLazy},
-	} {
-		b.Run(c.name, func(b *testing.B) {
-			s, err := c.fromText(testPrefixSetText)
-			if err != nil {
-				b.Fatal(err)
-			}
+	s, err := PrefixSetFromText(testPrefixSetText)
+	if err != nil {
+		b.Fatal(err)
+	}
 
-			for i := 0; b.Loop(); i++ {
-				cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
-				prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
-				if result := s.Encompasses(prefix); result != cc.want {
-					b.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
-				}
-			}
-		})
+	for i := 0; b.Loop(); i++ {
+		cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
+		prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
+		if result := s.Encompasses(prefix); result != cc.want {
+			b.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
+		}
 	}
 }
