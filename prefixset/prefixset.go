@@ -9,10 +9,8 @@ import (
 
 // PrefixSetFromText parses prefixes from the text and builds a prefix set.
 func PrefixSetFromText(text string) (*netipds.PrefixSet, error) {
-	return prefixSetFromText(text, netipds.PrefixSetBuilder{})
-}
+	var sb netipds.PrefixSetBuilder
 
-func prefixSetFromText(text string, sb netipds.PrefixSetBuilder) (*netipds.PrefixSet, error) {
 	for line := range strings.Lines(text) {
 		if len(line) == 0 || line[0] == '#' {
 			continue

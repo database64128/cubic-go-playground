@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/aromatt/netipds v0.1.9
 	github.com/database64128/tfo-go/v2 v2.3.0
+	github.com/gaissmai/bart v0.24.0
 	github.com/lmittmann/tint v1.1.2
 	github.com/rs/zerolog v1.34.0
 	go.uber.org/zap v1.27.0

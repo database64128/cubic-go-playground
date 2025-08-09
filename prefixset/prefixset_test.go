@@ -2,7 +2,10 @@ package prefixset
 
 import (
 	"net/netip"
+	"slices"
 	"testing"
+
+	"github.com/gaissmai/bart"
 )
 
 const testPrefixSetText = `# Private prefixes.
@@ -26,25 +29,26 @@ fe80::/10
 ff00::/8
 `
 
-const compactedPrefixSetText = `0.0.0.0/8
-10.0.0.0/8
-100.64.0.0/10
-127.0.0.0/8
-169.254.0.0/16
-172.16.0.0/12
-192.0.0.0/24
-192.0.2.0/24
-192.88.99.0/24
-192.168.0.0/16
-198.18.0.0/15
-198.51.100.0/24
-203.0.113.0/24
-224.0.0.0/3
-::1/128
-fc00::/7
-fe80::/10
-ff00::/8
-`
+var sortedTestPrefixes = [...]netip.Prefix{
+	netip.PrefixFrom(netip.IPv4Unspecified(), 8),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{10, 0, 0, 0}), 8),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{100, 64, 0, 0}), 10),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{127, 0, 0, 0}), 8),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{169, 254, 0, 0}), 16),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{172, 16, 0, 0}), 12),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{192, 0, 0, 0}), 24),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{192, 0, 2, 0}), 24),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{192, 88, 99, 0}), 24),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{192, 168, 0, 0}), 16),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{198, 18, 0, 0}), 15),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{198, 51, 100, 0}), 24),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{203, 0, 113, 0}), 24),
+	netip.PrefixFrom(netip.AddrFrom4([4]byte{224, 0, 0, 0}), 3),
+	netip.PrefixFrom(netip.IPv6Loopback(), 128),
+	netip.PrefixFrom(netip.AddrFrom16([16]byte{0xfc}), 7),
+	netip.PrefixFrom(netip.AddrFrom16([16]byte{0xfe, 0x80}), 10),
+	netip.PrefixFrom(netip.AddrFrom16([16]byte{0xff}), 8),
+}
 
 var testPrefixSetContainsCases = [...]struct {
 	addr netip.Addr
@@ -81,15 +85,13 @@ func TestIPSet(t *testing.T) {
 	}
 
 	for _, cc := range testPrefixSetContainsCases {
-		if result := s.Contains(cc.addr); result != cc.want {
-			t.Errorf("s.Contains(%q) = %v, want %v", cc.addr, result, cc.want)
+		if got := s.Contains(cc.addr); got != cc.want {
+			t.Errorf("s.Contains(%q) = %v, want %v", cc.addr, got, cc.want)
 		}
 	}
 
-	text := IPSetToText(s)
-	expectedText := testPrefixSetText[20:]
-	if string(text) != expectedText {
-		t.Errorf("IPSetToText(s) = %q, want %q", text, expectedText)
+	if got := s.Prefixes(); !slices.Equal(got, sortedTestPrefixes[:]) {
+		t.Errorf("s.Prefixes() = %v, want %v", got, sortedTestPrefixes[:])
 	}
 }
 
@@ -109,8 +111,8 @@ func BenchmarkIPSetContains(b *testing.B) {
 
 	for i := 0; b.Loop(); i++ {
 		cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
-		if result := s.Contains(cc.addr); result != cc.want {
-			b.Errorf("s.Contains(%q) = %v, want %v", cc.addr, result, cc.want)
+		if got := s.Contains(cc.addr); got != cc.want {
+			b.Errorf("s.Contains(%q) = %v, want %v", cc.addr, got, cc.want)
 		}
 	}
 }
@@ -123,14 +125,13 @@ func TestPrefixSet(t *testing.T) {
 
 	for _, cc := range testPrefixSetContainsCases {
 		prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
-		if result := s.Encompasses(prefix); result != cc.want {
-			t.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
+		if got := s.Encompasses(prefix); got != cc.want {
+			t.Errorf("s.Encompasses(%q) = %v, want %v", prefix, got, cc.want)
 		}
 	}
 
-	text := PrefixSetToText(s)
-	if string(text) != compactedPrefixSetText {
-		t.Errorf("PrefixSetToText(s) = %q, want %q", text, compactedPrefixSetText)
+	if got := slices.AppendSeq(make([]netip.Prefix, 0, s.Size()), s.AllCompact()); !slices.Equal(got, sortedTestPrefixes[:]) {
+		t.Errorf("s.AllCompact() = %v, want %v", got, sortedTestPrefixes[:])
 	}
 }
 
@@ -151,8 +152,52 @@ func BenchmarkPrefixSetContains(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
 		prefix := netip.PrefixFrom(cc.addr, cc.addr.BitLen())
-		if result := s.Encompasses(prefix); result != cc.want {
-			b.Errorf("s.Encompasses(%q) = %v, want %v", prefix, result, cc.want)
+		if got := s.Encompasses(prefix); got != cc.want {
+			b.Errorf("s.Encompasses(%q) = %v, want %v", prefix, got, cc.want)
+		}
+	}
+}
+
+func TestBART(t *testing.T) {
+	s, err := BARTFromText(testPrefixSetText)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, cc := range testPrefixSetContainsCases {
+		if got := s.Contains(cc.addr); got != cc.want {
+			t.Errorf("s.Contains(%q) = %v, want %v", cc.addr, got, cc.want)
+		}
+	}
+
+	got := make([]netip.Prefix, 0, s.Size())
+	for prefix := range s.AllSorted() {
+		got = append(got, prefix)
+	}
+	if !slices.Equal(got, sortedTestPrefixes[:]) {
+		t.Errorf("s.Prefixes() = %v, want %v", got, sortedTestPrefixes[:])
+	}
+}
+
+func BenchmarkBARTFromText(b *testing.B) {
+	for b.Loop() {
+		var s bart.Lite
+		if err := bartInsertFromText(&s, testPrefixSetText); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkBARTContains(b *testing.B) {
+	s, err := BARTFromText(testPrefixSetText)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		cc := &testPrefixSetContainsCases[i%len(testPrefixSetContainsCases)]
+		if got := s.Contains(cc.addr); got != cc.want {
+			b.Errorf("s.Contains(%q) = %v, want %v", cc.addr, got, cc.want)
 		}
 	}
 }
