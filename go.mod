@@ -11,6 +11,8 @@ require (
 	go.uber.org/zap v1.27.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 	golang.org/x/crypto v0.41.0
+	golang.org/x/net v0.43.0
+	golang.org/x/sys v0.35.0
 	lukechampine.com/blake3 v1.4.1
 )
 
@@ -20,5 +22,4 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
 )
