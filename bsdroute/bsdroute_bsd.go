@@ -132,6 +132,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 				logAddrs(m.Addrs, filter,
 					slog.Any("type", msgType(m.Type)),
 					slog.Int("ifindex", m.Index),
+					tslog.Uint("id", m.ID),
 				)...,
 			)
 
