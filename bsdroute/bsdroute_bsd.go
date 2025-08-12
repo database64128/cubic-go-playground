@@ -118,6 +118,8 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 		return
 	}
 
+	logger.Debug("Parsed route messages", slog.Int("count", len(rmsgs)))
+
 	var ifindex int
 
 	for _, m := range rmsgs {
