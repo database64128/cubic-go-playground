@@ -1,4 +1,4 @@
-//go:build dragonfly || freebsd || openbsd || solaris
+//go:build dragonfly || freebsd || openbsd
 
 package main
 

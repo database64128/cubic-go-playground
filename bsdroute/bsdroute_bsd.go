@@ -1,4 +1,4 @@
-//go:build darwin || dragonfly || freebsd || netbsd || openbsd || solaris
+//go:build darwin || dragonfly || freebsd || netbsd || openbsd
 
 package main
 
@@ -9,11 +9,9 @@ import (
 	"net/netip"
 	"os"
 	"strconv"
-	"sync"
 	"unsafe"
 
 	"github.com/database64128/cubic-go-playground/logging/tslog"
-	"golang.org/x/net/route"
 	"golang.org/x/sys/unix"
 )
 
@@ -45,42 +43,38 @@ func main() {
 	}
 	logger := logCfg.NewLogger(os.Stderr)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		monitorRoutingSocket(logger.WithAttrs(slog.String("source", "monitor")))
-	}()
-
-	rib, err := route.FetchRIB(unix.AF_UNSPEC, route.RIBTypeRoute, 0)
+	fd, err := newRoutingSocket()
 	if err != nil {
-		logger.Error("Failed to fetch RIB", tslog.Err(err))
+		logger.Error("Failed to open routing socket", tslog.Err(err))
 		os.Exit(1)
 	}
-	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "route")), rib, true)
+	f := os.NewFile(uintptr(fd), "route")
+	defer f.Close()
 
-	rib, err = route.FetchRIB(unix.AF_UNSPEC, route.RIBTypeInterface, 0)
+	b, err := sysctlGetBytes([]int32{unix.CTL_NET, unix.AF_ROUTE, 0, unix.AF_UNSPEC, unix.NET_RT_IFLIST, 0})
 	if err != nil {
-		logger.Error("Failed to fetch RIB", tslog.Err(err))
+		logger.Error("Failed to get interface dump", tslog.Err(err))
 		os.Exit(1)
 	}
-	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "interface")), rib, true)
+	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "interface")), b, true)
 
-	wg.Wait()
+	b, err = sysctlGetBytes([]int32{unix.CTL_NET, unix.AF_ROUTE, 0, unix.AF_UNSPEC, unix.NET_RT_DUMP, 0})
+	if err != nil {
+		logger.Error("Failed to get route dump", tslog.Err(err))
+		os.Exit(1)
+	}
+	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "route")), b, true)
+
+	monitorRoutingSocket(logger.WithAttrs(slog.String("source", "monitor")), f)
 }
 
-func monitorRoutingSocket(logger *tslog.Logger) {
-	fd, err := unix.Socket(unix.AF_ROUTE, unix.SOCK_RAW, unix.AF_UNSPEC)
-	if err != nil {
-		logger.Error("Failed to create socket", tslog.Err(err))
-		os.Exit(1)
-	}
-	defer unix.Close(fd)
-
-	b := make([]byte, 2048)
-
+func monitorRoutingSocket(logger *tslog.Logger, f *os.File) {
+	// route(8) monitor uses this buffer size.
+	// Each read only returns a single message.
+	const readBufSize = 2048
+	b := make([]byte, readBufSize)
 	for {
-		n, err := unix.Read(fd, b)
+		n, err := f.Read(b)
 		if err != nil {
 			logger.Error("Failed to read route message", tslog.Err(err))
 			continue
@@ -116,7 +110,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 
 		switch m.Type {
 		case unix.RTM_ADD, unix.RTM_DELETE, unix.RTM_CHANGE, unix.RTM_GET:
-			if m.Msglen < unix.SizeofRtMsghdr {
+			if len(msgBuf) < unix.SizeofRtMsghdr {
 				logger.Error("Invalid rt_msghdr length",
 					tslog.Uint("msglen", m.Msglen),
 					tslog.Uint("version", m.Version),
@@ -142,11 +136,12 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 			logger.Info("RouteMessage", appendAddrAttrs([]slog.Attr{
 				slog.Any("type", msgType(rtm.Type)),
 				tslog.Uint("ifindex", rtm.Index),
+				slog.Any("flags", routeFlags(rtm.Flags)),
 				tslog.Int("pid", rtm.Pid),
 			}, &addrs, filter)...)
 
 		case unix.RTM_IFINFO:
-			if m.Msglen < unix.SizeofIfMsghdr {
+			if len(msgBuf) < unix.SizeofIfMsghdr {
 				logger.Error("Invalid if_msghdr length",
 					tslog.Uint("msglen", m.Msglen),
 					tslog.Uint("version", m.Version),
@@ -174,12 +169,12 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 
 			logger.Info("InterfaceMessage", appendAddrAttrs([]slog.Attr{
 				slog.Any("type", msgType(ifm.Type)),
+				slog.Any("flags", ifaceFlags(ifm.Flags)),
 				tslog.Uint("ifindex", ifm.Index),
-			}, &addrs, false)...,
-			)
+			}, &addrs, false)...)
 
 		case unix.RTM_NEWADDR, unix.RTM_DELADDR:
-			if m.Msglen < unix.SizeofIfaMsghdr {
+			if len(msgBuf) < unix.SizeofIfaMsghdr {
 				logger.Error("Invalid ifa_msghdr length",
 					tslog.Uint("msglen", m.Msglen),
 					tslog.Uint("version", m.Version),
@@ -204,8 +199,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 				appendAddrAttrs([]slog.Attr{
 					slog.Any("type", msgType(ifam.Type)),
 					tslog.Uint("ifindex", ifam.Index),
-				}, &addrs, false)...,
-			)
+				}, &addrs, false)...)
 
 		default:
 			logger.Info("Unknown message type",
@@ -217,7 +211,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 	}
 }
 
-type msgType int
+type msgType uint8
 
 func (m msgType) String() string {
 	switch m {
@@ -238,6 +232,36 @@ func (m msgType) String() string {
 	default:
 		return strconv.Itoa(int(m))
 	}
+}
+
+type routeFlags int32
+
+func (f routeFlags) AppendText(b []byte) ([]byte, error) {
+	for _, flag := range routeFlagNames {
+		if f&flag.mask != 0 {
+			b = append(b, flag.name)
+		}
+	}
+	return b, nil
+}
+
+func (f routeFlags) MarshalText() ([]byte, error) {
+	return f.AppendText(make([]byte, 0, len(routeFlagNames)))
+}
+
+type ifaceFlags int32
+
+func (f ifaceFlags) AppendText(b []byte) ([]byte, error) {
+	for _, flag := range ifaceFlagNames {
+		if f&flag.mask != 0 {
+			b = append(b, flag.name...)
+		}
+	}
+	return b, nil
+}
+
+func (f ifaceFlags) MarshalText() ([]byte, error) {
+	return f.AppendText(make([]byte, 0, len(ifaceFlagNames)))
 }
 
 func parseAddrs(dst *[unix.RTAX_MAX]*unix.RawSockaddr, addrs int32, b []byte) error {
