@@ -4,7 +4,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log/slog"
 	"net/netip"
 	"os"
@@ -128,10 +127,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 			}
 
 			var addrs [unix.RTAX_MAX]*unix.RawSockaddr
-			if err := parseAddrs(&addrs, rtm.Addrs, m.addrsBuf(msgBuf, unix.SizeofRtMsghdr)); err != nil {
-				logger.Error("Failed to parse addresses", tslog.Err(err))
-				return
-			}
+			parseAddrs(&addrs, rtm.Addrs, m.addrsBuf(msgBuf, unix.SizeofRtMsghdr))
 
 			logger.Info("RouteMessage", appendAddrAttrs([]slog.Attr{
 				slog.Any("type", msgType(rtm.Type)),
@@ -162,10 +158,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 			ifindex = ifm.Index
 
 			var addrs [unix.RTAX_MAX]*unix.RawSockaddr
-			if err := parseAddrs(&addrs, ifm.Addrs, m.addrsBuf(msgBuf, unix.SizeofIfMsghdr)); err != nil {
-				logger.Error("Failed to parse addresses", tslog.Err(err))
-				return
-			}
+			parseAddrs(&addrs, ifm.Addrs, m.addrsBuf(msgBuf, unix.SizeofIfMsghdr))
 
 			logger.Info("InterfaceMessage", appendAddrAttrs([]slog.Attr{
 				slog.Any("type", msgType(ifm.Type)),
@@ -190,10 +183,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 			}
 
 			var addrs [unix.RTAX_MAX]*unix.RawSockaddr
-			if err := parseAddrs(&addrs, ifam.Addrs, m.addrsBuf(msgBuf, unix.SizeofIfaMsghdr)); err != nil {
-				logger.Error("Failed to parse addresses", tslog.Err(err))
-				return
-			}
+			parseAddrs(&addrs, ifam.Addrs, m.addrsBuf(msgBuf, unix.SizeofIfaMsghdr))
 
 			logger.Info("InterfaceAddrMessage",
 				appendAddrAttrs([]slog.Attr{
@@ -269,23 +259,25 @@ func (f ifaceFlags) MarshalText() ([]byte, error) {
 	return f.AppendText(make([]byte, 0, len(ifaceFlagNames)))
 }
 
-func parseAddrs(dst *[unix.RTAX_MAX]*unix.RawSockaddr, addrs int32, b []byte) error {
+func parseAddrs(dst *[unix.RTAX_MAX]*unix.RawSockaddr, addrs int32, b []byte) {
 	for i := range unix.RTAX_MAX {
 		if addrs&(1<<i) == 0 {
 			continue
 		}
-		if len(b) < unix.SizeofSockaddrInet4 {
-			return fmt.Errorf("truncated rtaddr %d", i)
+		// Yes, there will be shorter or even empty addresses.
+		// route(4) prints them as "default".
+		if len(b) >= unix.SizeofSockaddrInet4 {
+			dst[i] = (*unix.RawSockaddr)(unsafe.Pointer(unsafe.SliceData(b)))
 		}
-		sa := (*unix.RawSockaddr)(unsafe.Pointer(unsafe.SliceData(b)))
-		dst[i] = sa
-		alignedLen := rtaAlign(int(sa.Len))
+		if len(b) == 0 {
+			return
+		}
+		alignedLen := rtaAlign(int(b[0]))
 		if len(b) < alignedLen {
-			return fmt.Errorf("truncated rtaddr %d", i)
+			return
 		}
 		b = b[alignedLen:]
 	}
-	return nil
 }
 
 func appendAddrAttrs(attrs []slog.Attr, addrs *[unix.RTAX_MAX]*unix.RawSockaddr, defaultRouteOnly bool) []slog.Attr {
