@@ -252,10 +252,15 @@ func (f routeFlags) MarshalText() ([]byte, error) {
 type ifaceFlags int32
 
 func (f ifaceFlags) AppendText(b []byte) ([]byte, error) {
+	bLen := len(b)
 	for _, flag := range ifaceFlagNames {
 		if f&flag.mask != 0 {
 			b = append(b, flag.name...)
+			b = append(b, ',')
 		}
+	}
+	if len(b) > bLen {
+		b = b[:len(b)-1]
 	}
 	return b, nil
 }
