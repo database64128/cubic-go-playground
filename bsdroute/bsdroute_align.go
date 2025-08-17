@@ -2,9 +2,9 @@
 
 package main
 
-func rtaAlign(n int) int {
+func rtaAlign(n uint8) uint8 {
 	if n == 0 {
 		return rtaAlignTo
 	}
-	return (n + rtaAlignTo - 1) & ^(rtaAlignTo - 1)
+	return (n + rtaAlignTo - 1) & ^uint8(rtaAlignTo-1)
 }

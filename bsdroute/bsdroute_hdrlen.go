@@ -11,10 +11,13 @@ type msghdr struct {
 	Hdrlen  uint16
 }
 
-func (m *msghdr) isHdrlenOK() bool {
-	return m.Hdrlen <= m.Msglen
+func (m *msghdr) hdrlen() uint16 {
+	return m.Hdrlen
 }
 
-func (m *msghdr) addrsBuf(msgBuf []byte, _ int) []byte {
-	return msgBuf[m.Hdrlen:]
+func (m *msghdr) addrsBuf(msgBuf []byte, _ int) ([]byte, bool) {
+	if int(m.Hdrlen) > len(msgBuf) {
+		return nil, false
+	}
+	return msgBuf[m.Hdrlen:], true
 }

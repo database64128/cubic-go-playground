@@ -10,10 +10,10 @@ type msghdr struct {
 	Type    uint8
 }
 
-func (m *msghdr) isHdrlenOK() bool {
-	return true
+func (*msghdr) hdrlen() uint16 {
+	panic("unreachable")
 }
 
-func (m *msghdr) addrsBuf(msgBuf []byte, hdrlen int) []byte {
-	return msgBuf[hdrlen:]
+func (*msghdr) addrsBuf(msgBuf []byte, hdrlen int) ([]byte, bool) {
+	return msgBuf[hdrlen:], true
 }

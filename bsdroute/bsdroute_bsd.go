@@ -87,11 +87,11 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 
 	for len(b) >= sizeofMsghdr {
 		m := (*msghdr)(unsafe.Pointer(unsafe.SliceData(b)))
-		if m.Msglen < sizeofMsghdr || int(m.Msglen) > len(b) || !m.isHdrlenOK() {
+		if m.Msglen < sizeofMsghdr || int(m.Msglen) > len(b) {
 			logger.Error("Invalid message length",
 				tslog.Uint("msglen", m.Msglen),
 				tslog.Uint("version", m.Version),
-				tslog.Uint("type", m.Type),
+				slog.Any("type", msgType(m.Type)),
 			)
 			return
 		}
@@ -102,7 +102,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 			logger.Warn("Unsupported message version",
 				tslog.Uint("msglen", m.Msglen),
 				tslog.Uint("version", m.Version),
-				tslog.Uint("type", m.Type),
+				slog.Any("type", msgType(m.Type)),
 			)
 			continue
 		}
@@ -113,7 +113,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 				logger.Error("Invalid rt_msghdr length",
 					tslog.Uint("msglen", m.Msglen),
 					tslog.Uint("version", m.Version),
-					tslog.Uint("type", m.Type),
+					slog.Any("type", msgType(m.Type)),
 				)
 				return
 			}
@@ -126,8 +126,19 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 				continue
 			}
 
+			addrsBuf, ok := m.addrsBuf(msgBuf, unix.SizeofRtMsghdr)
+			if !ok {
+				logger.Error("Invalid header length",
+					tslog.Uint("msglen", m.Msglen),
+					tslog.Uint("version", m.Version),
+					slog.Any("type", msgType(m.Type)),
+					tslog.Uint("hdrlen", m.hdrlen()),
+				)
+				return
+			}
+
 			var addrs [unix.RTAX_MAX]*unix.RawSockaddr
-			parseAddrs(&addrs, rtm.Addrs, m.addrsBuf(msgBuf, unix.SizeofRtMsghdr))
+			parseAddrs(&addrs, rtm.Addrs, addrsBuf)
 
 			logger.Info("RouteMessage", appendAddrAttrs([]slog.Attr{
 				slog.Any("type", msgType(rtm.Type)),
@@ -141,7 +152,7 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 				logger.Error("Invalid if_msghdr length",
 					tslog.Uint("msglen", m.Msglen),
 					tslog.Uint("version", m.Version),
-					tslog.Uint("type", m.Type),
+					slog.Any("type", msgType(m.Type)),
 				)
 				return
 			}
@@ -157,8 +168,19 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 
 			ifindex = ifm.Index
 
+			addrsBuf, ok := m.addrsBuf(msgBuf, unix.SizeofIfMsghdr)
+			if !ok {
+				logger.Error("Invalid header length",
+					tslog.Uint("msglen", m.Msglen),
+					tslog.Uint("version", m.Version),
+					slog.Any("type", msgType(m.Type)),
+					tslog.Uint("hdrlen", m.hdrlen()),
+				)
+				return
+			}
+
 			var addrs [unix.RTAX_MAX]*unix.RawSockaddr
-			parseAddrs(&addrs, ifm.Addrs, m.addrsBuf(msgBuf, unix.SizeofIfMsghdr))
+			parseAddrs(&addrs, ifm.Addrs, addrsBuf)
 
 			logger.Info("InterfaceMessage", appendAddrAttrs([]slog.Attr{
 				slog.Any("type", msgType(ifm.Type)),
@@ -182,8 +204,19 @@ func parseAndLogMsgs(logger *tslog.Logger, b []byte, filter bool) {
 				continue
 			}
 
+			addrsBuf, ok := m.addrsBuf(msgBuf, unix.SizeofIfaMsghdr)
+			if !ok {
+				logger.Error("Invalid header length",
+					tslog.Uint("msglen", m.Msglen),
+					tslog.Uint("version", m.Version),
+					slog.Any("type", msgType(m.Type)),
+					tslog.Uint("hdrlen", m.hdrlen()),
+				)
+				return
+			}
+
 			var addrs [unix.RTAX_MAX]*unix.RawSockaddr
-			parseAddrs(&addrs, ifam.Addrs, m.addrsBuf(msgBuf, unix.SizeofIfaMsghdr))
+			parseAddrs(&addrs, ifam.Addrs, addrsBuf)
 
 			logger.Info("InterfaceAddrMessage",
 				appendAddrAttrs([]slog.Attr{
@@ -272,8 +305,8 @@ func parseAddrs(dst *[unix.RTAX_MAX]*unix.RawSockaddr, addrs int32, b []byte) {
 		if len(b) == 0 {
 			return
 		}
-		alignedLen := rtaAlign(int(b[0]))
-		if len(b) < alignedLen {
+		alignedLen := rtaAlign(b[0])
+		if len(b) < int(alignedLen) {
 			return
 		}
 		b = b[alignedLen:]
