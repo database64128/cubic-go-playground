@@ -1,5 +1,5 @@
 //go:build netbsd
 
-package main
+package bsdroute
 
 const rtaAlignTo = 8

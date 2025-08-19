@@ -1,6 +1,6 @@
 //go:build dragonfly || freebsd || openbsd
 
-package main
+package bsdroute
 
 import "golang.org/x/sys/unix"
 

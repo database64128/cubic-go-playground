@@ -1,5 +1,5 @@
 //go:build darwin
 
-package main
+package bsdroute
 
 const rtaAlignTo = 4
