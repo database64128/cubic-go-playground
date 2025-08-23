@@ -1,6 +1,6 @@
 module github.com/database64128/cubic-go-playground
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/aromatt/netipds v0.1.9
