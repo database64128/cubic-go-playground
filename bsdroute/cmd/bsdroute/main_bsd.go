@@ -300,9 +300,11 @@ func appendAddrAttr(attrs []slog.Attr, name string, sa *unix.RawSockaddr, ioctlF
 		if int(sa.Nlen) > len(sa.Data) {
 			return attrs
 		}
-		ifnameBuf := unsafe.Slice((*byte)(unsafe.Pointer(&sa.Data)), sa.Nlen)
-		ifname := string(ifnameBuf)
-		return append(attrs, slog.String(name, ifname))
+		ifname := unsafe.String((*byte)(unsafe.Pointer(&sa.Data)), sa.Nlen)
+		return append(attrs, slog.GroupAttrs(name,
+			tslog.Uint("index", sa.Index),
+			slog.String("name", ifname),
+		))
 
 	default:
 		return attrs
