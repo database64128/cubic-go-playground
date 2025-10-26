@@ -64,14 +64,14 @@ func main() {
 		logger.Error("Failed to get interface dump", tslog.Err(err))
 		os.Exit(1)
 	}
-	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "interface")), ioctlFd, b, dumpAll)
+	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "interface")), ioctlFd, b, !dumpAll)
 
 	b, err = bsdroute.SysctlGetBytes([]int32{unix.CTL_NET, unix.AF_ROUTE, 0, unix.AF_UNSPEC, unix.NET_RT_DUMP, 0})
 	if err != nil {
 		logger.Error("Failed to get route dump", tslog.Err(err))
 		os.Exit(1)
 	}
-	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "route")), ioctlFd, b, dumpAll)
+	parseAndLogMsgs(logger.WithAttrs(slog.String("source", "route")), ioctlFd, b, !dumpAll)
 
 	monitorRoutingSocket(logger.WithAttrs(slog.String("source", "monitor")), f, ioctlFd)
 }
