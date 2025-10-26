@@ -157,6 +157,11 @@ func Uint[V ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr](key string,
 	return slog.Uint64(key, uint64(value))
 }
 
+// ByteString returns a [slog.Attr] for a byte slice as a string value without allocating.
+func ByteString(key string, b []byte) slog.Attr {
+	return slog.String(key, unsafe.String(unsafe.SliceData(b), len(b)))
+}
+
 // Addr returns a [slog.Attr] for a [netip.Addr].
 //
 // If addr is the zero value, the value is the empty string.
