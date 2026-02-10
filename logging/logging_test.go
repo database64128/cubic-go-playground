@@ -15,6 +15,7 @@ import (
 var (
 	ip       = netip.AddrFrom16([16]byte{0x20, 0x01, 0x0d, 0xb8, 0xfa, 0xd6, 0x05, 0x72, 0xac, 0xbe, 0x71, 0x43, 0x14, 0xe5, 0x7a, 0x6e})
 	addrPort = netip.AddrPortFrom(ip, 1234)
+	prefix   = netip.PrefixFrom(ip, 64)
 )
 
 func openDevNull(b *testing.B) *os.File {
@@ -66,6 +67,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 			logger.Info("Hello, world!",
 				zap.String("ip", ip.String()),
 				zap.String("addrPort", addrPort.String()),
+				zap.String("prefix", prefix.String()),
 			)
 		}
 	})
@@ -75,6 +77,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 			logger.Info("Hello, world!",
 				zap.Stringer("ip", ip),
 				zap.Stringer("addrPort", addrPort),
+				zap.Stringer("prefix", prefix),
 			)
 		}
 	})
@@ -84,6 +87,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 			logger.Info("Hello, world!",
 				zap.Stringer("ip", &ip),
 				zap.Stringer("addrPort", &addrPort),
+				zap.Stringer("prefix", &prefix),
 			)
 		}
 	})
@@ -99,6 +103,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 			logger.Debug("Hello, world!",
 				zap.String("ip", ip.String()),
 				zap.String("addrPort", addrPort.String()),
+				zap.String("prefix", prefix.String()),
 			)
 		}
 	})
@@ -108,6 +113,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 			logger.Debug("Hello, world!",
 				zap.Stringer("ip", ip),
 				zap.Stringer("addrPort", addrPort),
+				zap.Stringer("prefix", prefix),
 			)
 		}
 	})
@@ -117,6 +123,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 			logger.Debug("Hello, world!",
 				zap.Stringer("ip", &ip),
 				zap.Stringer("addrPort", &addrPort),
+				zap.Stringer("prefix", &prefix),
 			)
 		}
 	})
@@ -137,6 +144,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 						ce.Write(
 							zap.String("ip", ip.String()),
 							zap.String("addrPort", addrPort.String()),
+							zap.String("prefix", prefix.String()),
 						)
 					}
 				}
@@ -148,6 +156,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 						ce.Write(
 							zap.Stringer("ip", ip),
 							zap.Stringer("addrPort", addrPort),
+							zap.Stringer("prefix", prefix),
 						)
 					}
 				}
@@ -159,6 +168,7 @@ func benchmarkZapLogger(b *testing.B, logger *zap.Logger) {
 						ce.Write(
 							zap.Stringer("ip", &ip),
 							zap.Stringer("addrPort", &addrPort),
+							zap.Stringer("prefix", &prefix),
 						)
 					}
 				}
@@ -210,6 +220,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Info("Hello, world!",
 				slog.Any("ip", ip),
 				slog.Any("addrPort", addrPort),
+				slog.Any("prefix", prefix),
 			)
 		}
 	})
@@ -219,6 +230,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Info("Hello, world!",
 				slog.Any("ip", &ip),
 				slog.Any("addrPort", &addrPort),
+				slog.Any("prefix", &prefix),
 			)
 		}
 	})
@@ -228,6 +240,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Info("Hello, world!",
 				tslog.Addr("ip", ip),
 				tslog.AddrPort("addrPort", addrPort),
+				tslog.Prefix("prefix", prefix),
 			)
 		}
 	})
@@ -237,6 +250,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Info("Hello, world!",
 				tslog.AddrMarshalText("ip", ip),
 				tslog.AddrPortMarshalText("addrPort", addrPort),
+				tslog.PrefixMarshalText("prefix", prefix),
 			)
 		}
 	})
@@ -252,6 +266,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Debug("Hello, world!",
 				slog.Any("ip", ip),
 				slog.Any("addrPort", addrPort),
+				slog.Any("prefix", prefix),
 			)
 		}
 	})
@@ -261,6 +276,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Debug("Hello, world!",
 				slog.Any("ip", &ip),
 				slog.Any("addrPort", &addrPort),
+				slog.Any("prefix", &prefix),
 			)
 		}
 	})
@@ -270,6 +286,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Debug("Hello, world!",
 				tslog.Addr("ip", ip),
 				tslog.AddrPort("addrPort", addrPort),
+				tslog.Prefix("prefix", prefix),
 			)
 		}
 	})
@@ -279,6 +296,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 			logger.Debug("Hello, world!",
 				tslog.AddrMarshalText("ip", ip),
 				tslog.AddrPortMarshalText("addrPort", addrPort),
+				tslog.PrefixMarshalText("prefix", prefix),
 			)
 		}
 	})
@@ -291,6 +309,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 						logger.Log(lvl, "Hello, world!",
 							slog.Any("ip", ip),
 							slog.Any("addrPort", addrPort),
+							slog.Any("prefix", prefix),
 						)
 					}
 				}
@@ -302,6 +321,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 						logger.Log(lvl, "Hello, world!",
 							slog.Any("ip", &ip),
 							slog.Any("addrPort", &addrPort),
+							slog.Any("prefix", &prefix),
 						)
 					}
 				}
@@ -313,6 +333,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 						logger.Log(lvl, "Hello, world!",
 							tslog.Addr("ip", ip),
 							tslog.AddrPort("addrPort", addrPort),
+							tslog.Prefix("prefix", prefix),
 						)
 					}
 				}
@@ -324,6 +345,7 @@ func benchmarkTslogLogger(b *testing.B, logger *tslog.Logger) {
 						logger.Log(lvl, "Hello, world!",
 							tslog.AddrMarshalText("ip", ip),
 							tslog.AddrPortMarshalText("addrPort", addrPort),
+							tslog.PrefixMarshalText("prefix", prefix),
 						)
 					}
 				}
@@ -367,6 +389,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 					logger.LogAttrs(ctx, lvl, "Hello, world!",
 						slog.Any("ip", ip),
 						slog.Any("addrPort", addrPort),
+						slog.Any("prefix", prefix),
 					)
 				}
 			})
@@ -376,6 +399,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 					logger.LogAttrs(ctx, lvl, "Hello, world!",
 						slog.Any("ip", &ip),
 						slog.Any("addrPort", &addrPort),
+						slog.Any("prefix", &prefix),
 					)
 				}
 			})
@@ -385,6 +409,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 					logger.LogAttrs(ctx, lvl, "Hello, world!",
 						slog.String("ip", ip.String()),
 						slog.String("addrPort", addrPort.String()),
+						slog.String("prefix", prefix.String()),
 					)
 				}
 			})
@@ -395,6 +420,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 						logger.LogAttrs(ctx, lvl, "Hello, world!",
 							slog.Any("ip", ip),
 							slog.Any("addrPort", addrPort),
+							slog.Any("prefix", prefix),
 						)
 					}
 				}
@@ -406,6 +432,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 						logger.LogAttrs(ctx, lvl, "Hello, world!",
 							slog.Any("ip", &ip),
 							slog.Any("addrPort", &addrPort),
+							slog.Any("prefix", &prefix),
 						)
 					}
 				}
@@ -417,6 +444,7 @@ func benchmarkSlogLogger(b *testing.B, logger *slog.Logger) {
 						logger.LogAttrs(ctx, lvl, "Hello, world!",
 							slog.String("ip", ip.String()),
 							slog.String("addrPort", addrPort.String()),
+							slog.String("prefix", prefix.String()),
 						)
 					}
 				}
@@ -451,6 +479,7 @@ func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
 			logger.Info().
 				Str("ip", ip.String()).
 				Str("addrPort", addrPort.String()).
+				Str("prefix", prefix.String()).
 				Msg("Hello, world!")
 		}
 	})
@@ -460,6 +489,7 @@ func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
 			logger.Info().
 				Stringer("ip", ip).
 				Stringer("addrPort", addrPort).
+				Stringer("prefix", prefix).
 				Msg("Hello, world!")
 		}
 	})
@@ -469,6 +499,7 @@ func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
 			logger.Info().
 				Stringer("ip", &ip).
 				Stringer("addrPort", &addrPort).
+				Stringer("prefix", &prefix).
 				Msg("Hello, world!")
 		}
 	})
@@ -484,6 +515,7 @@ func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
 			logger.Debug().
 				Str("ip", ip.String()).
 				Str("addrPort", addrPort.String()).
+				Str("prefix", prefix.String()).
 				Msg("Hello, world!")
 		}
 	})
@@ -493,6 +525,7 @@ func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
 			logger.Debug().
 				Stringer("ip", ip).
 				Stringer("addrPort", addrPort).
+				Stringer("prefix", prefix).
 				Msg("Hello, world!")
 		}
 	})
@@ -502,6 +535,7 @@ func benchmarkZerologLogger(b *testing.B, logger zerolog.Logger) {
 			logger.Debug().
 				Stringer("ip", &ip).
 				Stringer("addrPort", &addrPort).
+				Stringer("prefix", &prefix).
 				Msg("Hello, world!")
 		}
 	})

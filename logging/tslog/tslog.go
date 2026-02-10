@@ -196,6 +196,23 @@ func AddrPortMarshalText(key string, addrPort netip.AddrPort) slog.Attr {
 	return slog.String(key, s)
 }
 
+// Prefix returns a [slog.Attr] for a [netip.Prefix].
+//
+// If prefix is the zero value, the value is the empty string.
+func Prefix(key string, prefix netip.Prefix) slog.Attr {
+	var s string
+	if prefix.IsValid() {
+		s = prefix.String()
+	}
+	return slog.String(key, s)
+}
+
+func PrefixMarshalText(key string, prefix netip.Prefix) slog.Attr {
+	b, _ := prefix.MarshalText()
+	s := unsafe.String(unsafe.SliceData(b), len(b))
+	return slog.String(key, s)
+}
+
 // Addrp returns a [slog.Attr] for a [*netip.Addr].
 //
 // Use [Addr] if the address is not already on the heap,
@@ -210,4 +227,12 @@ func Addrp(key string, addrp *netip.Addr) slog.Attr {
 // or the call is guarded by [Logger.Enabled].
 func AddrPortp(key string, addrPortp *netip.AddrPort) slog.Attr {
 	return slog.Any(key, addrPortp)
+}
+
+// Prefixp returns a [slog.Attr] for a [*netip.Prefix].
+//
+// Use [Prefix] if the prefix is not already on the heap,
+// or the call is guarded by [Logger.Enabled].
+func Prefixp(key string, prefixp *netip.Prefix) slog.Attr {
+	return slog.Any(key, prefixp)
 }
