@@ -66,9 +66,20 @@ var (
 )
 
 func run(ctx context.Context) {
-	// It's been observed that NotifyRouteChange2 sends 2 initial notifications and
-	// blocks until the callback calls return. Be safe here and give it 2 extra slots.
-	notifyCh := make(chan mibIpForwardRow2Notification, 4)
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	notifyCh := make(chan mibIpForwardRow2Notification)
+	defer close(notifyCh)
+
+	// Spin up the consumer goroutine before calling NotifyRouteChange2,
+	// because NotifyRouteChange2 sends initial notifications and blocks
+	// until the callback calls return.
+	wg.Go(func() {
+		for nmsg := range notifyCh {
+			handleMibIpForwardRow2Notification(nmsg)
+		}
+	})
 
 	var pinner runtime.Pinner
 	pinner.Pin(&notifyCh)
@@ -93,34 +104,17 @@ func run(ctx context.Context) {
 		tslog.Uint("notificationHandle", notificationHandle),
 	)
 
-	go func() {
-		// Always close notifyCh, even if we failed to unregister,
-		// because all bets are off anyways.
-		defer close(notifyCh)
+	<-ctx.Done()
 
-		<-ctx.Done()
-
-		// Apparently, even on success, the notification handle can be NULL!
-		// I mean, WTF, Microsoft?!
-		if notificationHandle == 0 {
-			logger.Debug("Skipping CancelMibChangeNotify2 because notification handle is NULL")
-			return
-		}
-
-		if err := windows.CancelMibChangeNotify2(notificationHandle); err != nil {
-			logger.Error("Failed to unregister for route change notifications",
-				tslog.Uint("notificationHandle", notificationHandle),
-				tslog.Err(os.NewSyscallError("CancelMibChangeNotify2", err)),
-			)
-			return
-		}
-
-		logger.Info("Unregistered for route change notifications")
-	}()
-
-	for nmsg := range notifyCh {
-		handleMibIpForwardRow2Notification(nmsg)
+	if err := windows.CancelMibChangeNotify2(notificationHandle); err != nil {
+		logger.Error("Failed to unregister for route change notifications",
+			tslog.Uint("notificationHandle", notificationHandle),
+			tslog.Err(os.NewSyscallError("CancelMibChangeNotify2", err)),
+		)
+		return
 	}
+
+	logger.Info("Unregistered for route change notifications")
 }
 
 func handleMibIpForwardRow2Notification(nmsg mibIpForwardRow2Notification) {
@@ -158,7 +152,9 @@ func handleMibIpForwardRow2Notification(nmsg mibIpForwardRow2Notification) {
 		logMibIpForwardRow2(&row, false)
 
 	case windows.MibInitialNotification:
-		// Skip subsequent initial notifications.
+		// With AF_UNSPEC, NotifyRouteChange2 sends 2 initial notifications,
+		// likely one for AF_INET and one for AF_INET6, but with no way to
+		// distinguish between them.
 		if initialNotificationHandled {
 			logger.Debug("Skipping subsequent initial notification")
 			return
