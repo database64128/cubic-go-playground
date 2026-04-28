@@ -9,7 +9,7 @@ require (
 	github.com/gaissmai/bart v0.26.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/rs/zerolog v1.35.1
-	go.uber.org/zap v1.27.1
+	go.uber.org/zap v1.28.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 	golang.org/x/crypto v0.50.0
 	golang.org/x/sys v0.43.0
