@@ -17,19 +17,22 @@ import (
 // Config is a set of options for a [*Logger].
 type Config struct {
 	// Level is the minimum level of log messages to write.
-	Level slog.Level `json:"level"`
+	Level slog.Level `json:"level,omitzero"`
 
 	// NoColor disables color in log messages.
-	NoColor bool `json:"no_color"`
+	NoColor bool `json:"no_color,omitzero"`
 
 	// NoTime disables timestamps in log messages.
-	NoTime bool `json:"no_time"`
+	NoTime bool `json:"no_time,omitzero"`
+
+	// PrettyJSON enables the use of a [tint] handler that pretty-prints JSON log messages.
+	PrettyJSON bool `json:"pretty_json,omitzero"`
 
 	// UseTextHandler enables the use of a [*slog.TextHandler] instead of the default tint handler.
-	UseTextHandler bool `json:"use_text_handler"`
+	UseTextHandler bool `json:"use_text_handler,omitzero"`
 
 	// UseJSONHandler enables the use of a [*slog.JSONHandler] instead of the default tint handler.
-	UseJSONHandler bool `json:"use_json_handler"`
+	UseJSONHandler bool `json:"use_json_handler,omitzero"`
 }
 
 // NewLogger creates a new [*Logger] that writes to w.
@@ -49,6 +52,7 @@ func (c Config) NewHandler(w io.Writer) slog.Handler {
 			Level: c.Level,
 		})
 	}
+	// Implement PrettyJSON once the next release of tint is out.
 	return tint.NewTextHandler(w, &tint.Options{
 		Level:   c.Level,
 		NoColor: c.NoColor,
