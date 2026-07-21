@@ -6,7 +6,7 @@ require (
 	github.com/aromatt/netipds v0.1.9
 	github.com/database64128/netx-go v0.1.1
 	github.com/database64128/tfo-go/v2 v2.3.3
-	github.com/gaissmai/bart v0.28.1
+	github.com/gaissmai/bart v0.28.2
 	github.com/lmittmann/tint v1.2.0
 	github.com/rs/zerolog v1.35.1
 	go.uber.org/zap v1.28.0
