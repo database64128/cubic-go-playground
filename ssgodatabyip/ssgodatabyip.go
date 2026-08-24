@@ -5,7 +5,8 @@ package main
 import (
 	"bufio"
 	"cmp"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"net/netip"
@@ -19,11 +20,11 @@ func main() {
 	addrByCSID := make(map[uint64]netip.Addr)
 	bytesByIP := make(map[netip.Addr]uint64)
 	r := newEventJSONReader(os.Stdin)
-	dec := json.NewDecoder(r)
+	dec := jsontext.NewDecoder(r)
 
 	for {
 		event = Event{}
-		if err := dec.Decode(&event); err != nil {
+		if err := json.UnmarshalDecode(dec, &event); err != nil {
 			if err == io.EOF {
 				break
 			}
