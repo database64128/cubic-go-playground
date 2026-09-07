@@ -1,5 +1,5 @@
-github.com/aromatt/netipds v0.1.9 h1:VmbfQDMwFZFrRP0PWl3xw/+22MU31T/rqxIrROqda2Q=
-github.com/aromatt/netipds v0.1.9/go.mod h1:495wZM0W/P9zQ/QpbEhNxR54H/7I0w7WDZhmX9kRkjM=
+github.com/aromatt/netipds v0.1.10 h1:aN7oyHz/qXfHlZ0Qb6M37eIu4Hjxhc7X9oGpXrA9v50=
+github.com/aromatt/netipds v0.1.10/go.mod h1:Rq4KFqDYJVRuAVipg9ST0010moDH7/TORcs6m0UgBcM=
 github.com/database64128/netx-go v0.1.1 h1:dT5LG7Gs7zFZBthFBbzWE6K8wAHjSNAaK7wCYZT7NzM=
 github.com/database64128/netx-go v0.1.1/go.mod h1:LNlYVipaYkQArRFDNNJ02VkNV+My9A5XR/IGS7sIBQc=
 github.com/database64128/tfo-go/v2 v2.4.0 h1:FqXQGNh0oPLNXkBnjK20Xt2+Vz2XkXP/PRUYq1gDklw=
@@ -43,3 +43,5 @@ gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 lukechampine.com/blake3 v1.4.1 h1:I3Smz7gso8w4/TunLKec6K2fn+kyKtDxr/xcQEN84Wg=
 lukechampine.com/blake3 v1.4.1/go.mod h1:QFosUxmjB8mnrWFSNwKmvxHpfY72bmD2tQ0kBMM3kwo=
+pgregory.net/rapid v1.2.0 h1:keKAYRcjm+e1F0oAuU5F5+YPAWcyxNNRK2wud503Gnk=
+pgregory.net/rapid v1.2.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=
