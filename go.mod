@@ -3,7 +3,7 @@ module github.com/database64128/cubic-go-playground
 go 1.27.0
 
 require (
-	github.com/aromatt/netipds v0.1.10
+	github.com/aromatt/netipds v0.1.11
 	github.com/database64128/netx-go v0.1.1
 	github.com/database64128/tfo-go/v2 v2.4.0
 	github.com/gaissmai/bart v0.29.0
