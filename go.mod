@@ -12,7 +12,7 @@ require (
 	go.uber.org/zap v1.28.0
 	go4.org/netipx v0.0.0-20260823151212-3075585bcbeb
 	golang.org/x/crypto v0.56.0
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 	lukechampine.com/blake3 v1.4.1
 )
 
