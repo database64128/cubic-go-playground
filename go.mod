@@ -7,7 +7,7 @@ require (
 	github.com/database64128/netx-go v0.1.1
 	github.com/database64128/tfo-go/v2 v2.4.1
 	github.com/gaissmai/bart v0.30.0
-	github.com/lmittmann/tint v1.2.0
+	github.com/lmittmann/tint v1.2.1
 	github.com/rs/zerolog v1.35.1
 	go.uber.org/zap v1.28.0
 	go4.org/netipx v0.0.0-20260823151212-3075585bcbeb
