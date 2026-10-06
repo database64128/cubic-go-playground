@@ -22,14 +22,30 @@ func run() int {
 	}
 
 	if size > 0 {
-		fmt.Printf("\nSetting socket buffer sizes to %d\n\n", size)
+		fmt.Println()
 
 		if !setSocketBufferSizes(fd, size, size) {
 			return 1
 		}
 
+		fmt.Println()
+
 		if !printSocketBufferSizes(fd) {
 			return 1
+		}
+
+		if force {
+			fmt.Println()
+
+			if !setSocketBufferSizesForce(fd, size, size) {
+				return 1
+			}
+
+			fmt.Println()
+
+			if !printSocketBufferSizes(fd) {
+				return 1
+			}
 		}
 	}
 
@@ -54,6 +70,8 @@ func printSocketBufferSizes(fd int) bool {
 }
 
 func setSocketBufferSizes(fd int, sndbuf, rcvbuf int) bool {
+	fmt.Printf("Setting SO_SNDBUF=%d, SO_RCVBUF=%d\n", sndbuf, rcvbuf)
+
 	if err := unix.SetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_SNDBUF, sndbuf); err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to set UDP socket send buffer size:", err)
 		return false
