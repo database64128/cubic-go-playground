@@ -15,7 +15,8 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: resolv [-network <ip|ip4|ip6>] <host>...\n")
+	fmt.Fprintf(os.Stderr, "Usage: %s [-network <ip|ip4|ip6>] <host>...\n", os.Args[0])
+	flag.PrintDefaults()
 }
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 
 	args := flag.Args()
 	if len(args) < 1 {
-		flag.Usage()
+		usage()
 		os.Exit(2)
 	}
 
