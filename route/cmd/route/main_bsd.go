@@ -4,6 +4,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/netip"
 	"os"
@@ -18,14 +19,11 @@ import (
 func main() {
 	flag.Parse()
 
-	logCfg := tslog.Config{
-		Level:          logLevel,
-		NoColor:        logNoColor,
-		NoTime:         logNoTime,
-		UseTextHandler: logKVPairs,
-		UseJSONHandler: logJSON,
+	logger, err := logCfg.NewLogger(os.Stderr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to create logger: %v\n", err)
+		os.Exit(1)
 	}
-	logger := logCfg.NewLogger(os.Stderr)
 
 	f, err := bsdroute.OpenRoutingSocket()
 	if err != nil {

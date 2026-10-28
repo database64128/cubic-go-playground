@@ -3,22 +3,19 @@ package main
 import (
 	"flag"
 	"log/slog"
+
+	"github.com/database64128/cubic-go-playground/logging/tslog"
 )
 
 var (
-	dumpAll    bool
-	logNoColor bool
-	logNoTime  bool
-	logKVPairs bool
-	logJSON    bool
-	logLevel   slog.Level
+	dumpAll bool
+	logCfg  tslog.Config
 )
 
 func init() {
-	flag.BoolVar(&dumpAll, "dumpAll", false, "Dump all routes and interfaces, not just the default routes and active interfaces")
-	flag.BoolVar(&logNoColor, "logNoColor", false, "Disable colors in log output")
-	flag.BoolVar(&logNoTime, "logNoTime", false, "Disable timestamps in log output")
-	flag.BoolVar(&logKVPairs, "logKVPairs", false, "Use key=value pairs in log output")
-	flag.BoolVar(&logJSON, "logJSON", false, "Use JSON in log output")
-	flag.TextVar(&logLevel, "logLevel", slog.LevelInfo, "Log level, one of: DEBUG, INFO, WARN, ERROR")
+	flag.BoolVar(&dumpAll, "dumpAll", false, "dump all routes and interfaces, not just the default routes and active interfaces")
+	flag.BoolVar(&logCfg.NoColor, "logNoColor", false, "disable colors in log output")
+	flag.BoolVar(&logCfg.NoTime, "logNoTime", false, "disable timestamps in log output")
+	flag.TextVar(&logCfg.Format, "logFormat", tslog.FormatDefault, "log `format`, one of: default, slog-text, slog-json, tint-text")
+	flag.TextVar(&logCfg.Level, "logLevel", slog.LevelInfo, "log `level`, one of: DEBUG, INFO, WARN, ERROR")
 }

@@ -181,27 +181,31 @@ func BenchmarkTslog(b *testing.B) {
 	f := openDevNull(b)
 
 	for _, c := range []struct {
-		name    string
-		noColor bool
-		noTime  bool
-		useText bool
-		useJSON bool
+		name      string
+		noColor   bool
+		noTime    bool
+		addSource bool
+		format    tslog.Format
 	}{
-		{"Color", false, false, false, false},
-		{"NoColor", true, false, false, false},
-		{"NoTime", false, true, false, false},
-		{"UseText", false, false, true, false},
-		{"UseJSON", false, false, false, true},
+		{"Color", false, false, false, tslog.FormatDefault},
+		{"NoColor", true, false, false, tslog.FormatDefault},
+		{"NoTime", false, true, false, tslog.FormatDefault},
+		{"AddSource", false, false, true, tslog.FormatDefault},
+		{"FormatSlogText", false, false, false, tslog.FormatSlogText},
+		{"FormatSlogJSON", false, false, false, tslog.FormatSlogJSON},
 	} {
 		b.Run(c.name, func(b *testing.B) {
 			logCfg := tslog.Config{
-				Level:          slog.LevelInfo,
-				NoColor:        c.noColor,
-				NoTime:         c.noTime,
-				UseTextHandler: c.useText,
-				UseJSONHandler: c.useJSON,
+				Level:     slog.LevelInfo,
+				NoColor:   c.noColor,
+				NoTime:    c.noTime,
+				AddSource: c.addSource,
+				Format:    c.format,
 			}
-			logger := logCfg.NewLogger(f)
+			logger, err := logCfg.NewLogger(f)
+			if err != nil {
+				b.Fatalf("Failed to create logger: %v", err)
+			}
 
 			benchmarkTslogLogger(b, logger)
 		})

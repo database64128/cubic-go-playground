@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/netip"
 	"os"
 	"os/signal"
@@ -24,14 +25,12 @@ func main() {
 		stop()
 	}()
 
-	logCfg := tslog.Config{
-		Level:          logLevel,
-		NoColor:        logNoColor,
-		NoTime:         logNoTime,
-		UseTextHandler: logKVPairs,
-		UseJSONHandler: logJSON,
+	var err error
+	logger, err = logCfg.NewLogger(os.Stderr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to create logger: %v\n", err)
+		os.Exit(1)
 	}
-	logger = logCfg.NewLogger(os.Stderr)
 
 	run(ctx)
 }
