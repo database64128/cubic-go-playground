@@ -13,7 +13,7 @@ require (
 	go4.org/netipx v0.0.0-20260823151212-3075585bcbeb
 	golang.org/x/crypto v0.59.0
 	golang.org/x/sys v0.50.0
-	lukechampine.com/blake3 v1.4.1
+	lukechampine.com/blake3 v1.5.0
 )
 
 require (
